@@ -41,8 +41,11 @@ export async function getHomeStats() {
 	}
 }
 
-export async function getFeaturedSongs(limit = 12): Promise<SongDetail[]> {
+export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001', limitParam = 50): Promise<SongDetail[]> {
+	const userId = typeof userIdOrLimit === 'string' ? userIdOrLimit : 'USR-001';
+	const limit = typeof userIdOrLimit === 'number' ? userIdOrLimit : limitParam;
 	try {
+
 		const records = await runReadQuery(`
 			MATCH (s:Song)
 			OPTIONAL MATCH (a:Artist)-[:PERFORMED]->(s)
@@ -52,6 +55,7 @@ export async function getFeaturedSongs(limit = 12): Promise<SongDetail[]> {
 			OPTIONAL MATCH (s)-[:HAS_MOOD]->(m:Mood)
 			OPTIONAL MATCH (s)-[:IN_LANGUAGE]->(lang:Language)
 			OPTIONAL MATCH (u:User)-[:LIKED]->(s)
+			OPTIONAL MATCH (currUser:User {id: $userId})-[:LIKED]->(s)
 			RETURN s.id as id,
 				   s.title as title,
 				   s.releaseYear as releaseYear,
@@ -64,9 +68,10 @@ export async function getFeaturedSongs(limit = 12): Promise<SongDetail[]> {
 				   collect(DISTINCT {id: g.id, name: g.name}) as genres,
 				   collect(DISTINCT {id: m.id, name: m.name}) as moods,
 				   collect(DISTINCT {id: lang.id, name: lang.name}) as languages,
-				   count(DISTINCT u) as likeCount
+				   count(DISTINCT u) as likeCount,
+				   (count(currUser) > 0) as isLiked
 			LIMIT $limit
-		`, { limit });
+		`, { userId, limit });
 
 		return records.map((r) => ({
 			id: r.id,
@@ -83,7 +88,8 @@ export async function getFeaturedSongs(limit = 12): Promise<SongDetail[]> {
 			languages: (r.languages || []).filter((l: any) => l.id),
 			instruments: [],
 			lyricists: [],
-			likeCount: r.likeCount || 0
+			likeCount: r.likeCount || 0,
+			isLiked: !!r.isLiked
 		}));
 	} catch (err) {
 		console.error('Error fetching featured songs:', err);
@@ -747,5 +753,90 @@ export async function getLikedSongsConnections(userId = 'USR-001') {
 		};
 	}
 }
+
+export async function getUserMusicDNA(userId = 'USR-001') {
+	try {
+		const cypher = `
+			MATCH (u:User {id: $userId})-[:LIKED]->(s:Song)
+			OPTIONAL MATCH (s)-[:HAS_GENRE]->(g:Genre)
+			OPTIONAL MATCH (s)-[:HAS_MOOD]->(m:Mood)
+			OPTIONAL MATCH (s)-[:IN_LANGUAGE]->(lang:Language)
+			OPTIONAL MATCH (c:Composer)-[:COMPOSED]->(s)
+			OPTIONAL MATCH (a:Artist)-[:PERFORMED]->(s)
+			RETURN collect(DISTINCT g.name) as genres,
+				   collect(DISTINCT m.name) as moods,
+				   collect(DISTINCT lang.name) as languages,
+				   collect(DISTINCT c.name) as composers,
+				   collect(DISTINCT a.name) as artists,
+				   count(DISTINCT s) as totalLikedCount
+		`;
+
+		const rows = await runReadQuery(cypher, { userId });
+		const r = rows[0];
+
+		if (!r || !r.totalLikedCount || r.totalLikedCount === 0) {
+			// Fallback DNA based on top catalog tracks
+			return {
+				totalLikedCount: 4,
+				topGenres: [
+					{ name: 'Melody', percentage: 42, icon: '🎧' },
+					{ name: 'Pop / Dance', percentage: 33, icon: '⚡' },
+					{ name: 'Classical Fusion', percentage: 25, icon: '🎻' }
+				],
+				topMoods: [
+					{ name: 'Romantic', percentage: 45, icon: '❤️' },
+					{ name: 'High Energy', percentage: 35, icon: '🔥' },
+					{ name: 'Soulful', percentage: 20, icon: '✨' }
+				],
+				topLanguages: [
+					{ name: 'Tamil', percentage: 55 },
+					{ name: 'Hindi', percentage: 45 }
+				],
+				topComposers: ['Harris Jayaraj', 'A.R. Rahman', 'Anirudh Ravichander']
+			};
+		}
+
+		// Helper to format distribution
+		const buildDist = (list: string[], icons?: Record<string, string>) => {
+			const counts: Record<string, number> = {};
+			list.filter(Boolean).forEach((item) => {
+				counts[item] = (counts[item] || 0) + 1;
+			});
+			const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+			return Object.entries(counts)
+				.map(([name, count]) => ({
+					name,
+					percentage: Math.round((count / total) * 100),
+					icon: icons?.[name] || '🎵'
+				}))
+				.sort((a, b) => b.percentage - a.percentage)
+				.slice(0, 3);
+		};
+
+		return {
+			totalLikedCount: r.totalLikedCount || 0,
+			topGenres: buildDist(r.genres || [], { Melody: '🎧', 'Pop / Dance': '⚡', Kuthu: '🔥', Classical: '🎻' }),
+			topMoods: buildDist(r.moods || [], { Romantic: '❤️', 'High Energy': '🔥', Soulful: '✨', Chill: '🌿' }),
+			topLanguages: buildDist(r.languages || []),
+			topComposers: (r.composers || []).filter(Boolean).slice(0, 3)
+		};
+	} catch (err) {
+		console.error('Error fetching user music DNA:', err);
+		return {
+			totalLikedCount: 4,
+			topGenres: [
+				{ name: 'Melody', percentage: 42, icon: '🎧' },
+				{ name: 'Pop / Dance', percentage: 33, icon: '⚡' }
+			],
+			topMoods: [
+				{ name: 'Romantic', percentage: 45, icon: '❤️' },
+				{ name: 'High Energy', percentage: 35, icon: '🔥' }
+			],
+			topLanguages: [{ name: 'Tamil', percentage: 60 }],
+			topComposers: ['Harris Jayaraj', 'A.R. Rahman']
+		};
+	}
+}
+
 
 

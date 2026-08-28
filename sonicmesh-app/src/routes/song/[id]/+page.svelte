@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { browser } from '$app/environment';
 	import LoadingSkeleton from '$lib/components/LoadingSkeleton.svelte';
-	import VisualGraphExplorer from '$lib/components/VisualGraphExplorer.svelte';
 
 	let { data } = $props();
 
@@ -9,6 +9,7 @@
 	let likeCount = $state(0);
 
 	async function getSongDetail(songId: string) {
+		if (!browser) return { song: null };
 		const res = await fetch(`/api/song/${songId}`);
 		if (!res.ok) throw new Error('Failed to fetch song details');
 		const payload = await res.json();
@@ -22,11 +23,15 @@
 	let songPromise = $derived(getSongDetail(data.songId));
 </script>
 
-<div class="max-w-4xl mx-auto space-y-8 py-2">
+<svelte:head>
+	<title>Track #{data.songId} Node — SonicMesh Studio</title>
+</svelte:head>
+
+<div class="mx-auto max-w-4xl space-y-8 py-2 font-mono">
 	<!-- Top Navigation -->
 	<div>
-		<a href="/" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1">
-			← Back to Songs Catalog
+		<a href="/" class="flex items-center gap-1 text-xs text-[#3ecf8e] hover:underline font-mono">
+			← Back to Catalog Overview
 		</a>
 	</div>
 
@@ -35,34 +40,34 @@
 	{:then payload}
 		{#if payload.song}
 			{@const song = payload.song}
-			<!-- Song Header & Album Image Card -->
-			<section class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-md relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
-				<div class="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden shadow-lg border border-slate-200 shrink-0 relative">
-					<img src={song.coverImage} alt={song.title} class="w-full h-full object-cover" />
+			<!-- Song Header Card -->
+			<section class="relative overflow-hidden rounded-xl border border-[#2e2e2e] bg-[#171717] p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-center gap-8">
+				<div class="h-44 w-44 sm:h-48 sm:w-48 shrink-0 overflow-hidden rounded-lg border border-[#2e2e2e] shadow-md relative">
+					<img src={song.coverImage} alt={song.title} class="h-full w-full object-cover" />
 				</div>
 
-				<div class="flex-1 space-y-4 text-center md:text-left">
-					<div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-						<span class="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider">
+				<div class="flex-1 space-y-3 text-center md:text-left">
+					<div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs">
+						<span class="rounded bg-[#1c392b] border border-[#2b5940] px-2.5 py-0.5 font-bold text-[#3ecf8e] uppercase">
 							Track #{song.id}
 						</span>
-						<span class="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
+						<span class="rounded bg-[#1e1e1e] border border-[#2e2e2e] px-2.5 py-0.5 text-[#a1a1aa]">
 							Released {song.releaseYear}
 						</span>
-						<span class="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-semibold">
+						<span class="rounded bg-[#1e1e1e] border border-[#2e2e2e] px-2.5 py-0.5 text-[#a1a1aa]">
 							{Math.floor(song.durationSeconds / 60)}m {song.durationSeconds % 60}s
 						</span>
 					</div>
 
-					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 font-heading tracking-tight">
+					<h1 class="font-heading text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
 						{song.title}
 					</h1>
 
-					<div class="text-base sm:text-lg text-indigo-600 font-bold">
+					<div class="text-base text-[#3ecf8e] font-bold">
 						{song.artists.map((a: any) => a.name).join(', ') || 'Various Performers'}
 					</div>
 
-					<div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4">
+					<div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
 						<form
 							method="POST"
 							action="?/like"
@@ -76,112 +81,88 @@
 						>
 							<button
 								type="submit"
-								class="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm hover:scale-105 {isLiked ? 'bg-rose-600 text-white shadow-rose-500/20' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300'}"
+								class="cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-all flex items-center gap-2 shadow-xs {isLiked ? 'bg-[#f43f5e] text-white' : 'sb-btn-secondary'}"
 							>
 								<svg class="w-4 h-4 {isLiked ? 'fill-current' : 'none'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
 								</svg>
-								{isLiked ? 'Liked in Taste Graph' : 'Like Song'} ({likeCount})
+								{isLiked ? 'Liked in Graph' : 'Like Track'} ({likeCount})
 							</button>
 						</form>
 
 						<a
 							href="/recommendations"
-							class="px-5 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold transition-all flex items-center gap-2"
+							class="sb-btn-primary px-4 py-2 text-xs font-semibold flex items-center gap-2"
 						>
-							<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-							</svg>
-							View Recommendations ➔
+							Inspect Recommendations ➔
 						</a>
 					</div>
 				</div>
 			</section>
 
-			<!-- 🕸️ Interactive Visual Graph Explorer Section -->
-			<section class="space-y-3">
-				<VisualGraphExplorer {song} />
-			</section>
-
-			<!-- Relationships & Creators Grid -->
-			<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-				<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-					<div class="flex items-center justify-between text-xs text-indigo-600 font-bold uppercase tracking-wider">
-						<span>Performers</span>
-						<span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+			<!-- Song Characteristics & Metadata Ledger -->
+			<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<!-- Performers & Composers -->
+				<div class="space-y-3 rounded-lg border border-[#2e2e2e] bg-[#171717] p-4 shadow-xs">
+					<div class="text-xs font-bold uppercase text-[#71717a]">
+						Creators & Performers
 					</div>
-					<div class="text-sm font-bold text-slate-900">Vocalists & Performers</div>
-					<div class="space-y-2.5">
+					<div class="space-y-2 text-xs">
 						{#each song.artists as a}
-							<a href="/artist/{encodeURIComponent(a.name)}" class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-colors">
-								<img src={a.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80'} alt={a.name} class="w-10 h-10 rounded-full object-cover shadow-sm shrink-0" />
-								<div>
-									<div class="text-xs font-bold text-slate-900">{a.name}</div>
-									<div class="text-[10px] text-slate-500 font-semibold">{a.country || 'India'}</div>
-								</div>
-							</a>
-						{/each}
-					</div>
-				</div>
-
-				<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-					<div class="flex items-center justify-between text-xs text-amber-600 font-bold uppercase tracking-wider">
-						<span>Composers</span>
-						<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-					</div>
-					<div class="text-sm font-bold text-slate-900">Music Directors</div>
-					<div class="space-y-2.5">
-						{#each song.composers as c}
-							<a href="/artist/{encodeURIComponent(c.name)}" class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-colors">
-								<img src={c.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80'} alt={c.name} class="w-10 h-10 rounded-full object-cover shadow-sm shrink-0" />
-								<div>
-									<div class="text-xs font-bold text-slate-900">{c.name}</div>
-									<div class="text-[10px] text-amber-700 font-semibold">Composer</div>
-								</div>
-							</a>
-						{/each}
-					</div>
-				</div>
-
-				<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-					<div class="flex items-center justify-between text-xs text-rose-600 font-bold uppercase tracking-wider">
-						<span>Album & Style</span>
-						<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-					</div>
-					<div class="text-sm font-bold text-slate-900">Album & Tags</div>
-					<div class="space-y-3">
-						{#if song.album}
-							<div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-								<img src={song.album.coverImage || song.coverImage} alt={song.album.title} class="w-10 h-10 rounded-lg object-cover shadow-sm shrink-0" />
-								<div>
-									<div class="text-xs font-bold text-slate-900">{song.album.title}</div>
-									<div class="text-[10px] text-slate-500">Album Node</div>
-								</div>
+							<div class="flex items-center gap-2 p-2 rounded bg-[#1e1e1e] border border-[#2e2e2e] text-white">
+								<span class="text-[#a855f7] font-bold">🎤</span>
+								<span>{a.name} (Performer)</span>
 							</div>
-						{/if}
+						{/each}
+						{#each song.composers as c}
+							<div class="flex items-center gap-2 p-2 rounded bg-[#1e1e1e] border border-[#2e2e2e] text-white">
+								<span class="text-[#f59e0b] font-bold">🎼</span>
+								<span>{c.name} (Composer)</span>
+							</div>
+						{/each}
 
-						<div class="flex flex-wrap gap-2">
-							{#each song.genres as g}
-								<span class="px-3 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
-									{g.name}
-								</span>
-							{/each}
-							{#each song.moods as m}
-								<span class="px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
-									{m.name}
-								</span>
-							{/each}
-						</div>
 					</div>
+				</div>
+
+				<!-- Music Attributes -->
+				<div class="space-y-3 rounded-lg border border-[#2e2e2e] bg-[#171717] p-4 shadow-xs">
+					<div class="text-xs font-bold uppercase text-[#71717a]">
+						Music Characteristics
+					</div>
+					<div class="flex flex-wrap gap-1.5 text-xs">
+						{#each song.genres as g}
+							<span class="sb-badge-purple px-2.5 py-1">Genre: {g.name}</span>
+						{/each}
+						{#each song.moods as m}
+							<span class="sb-badge-green px-2.5 py-1">Mood: {m.name}</span>
+						{/each}
+						{#each song.languages as lang}
+							<span class="sb-badge-blue px-2.5 py-1">Lang: {lang.name}</span>
+						{/each}
+					</div>
+				</div>
+
+				<!-- Album Info -->
+				<div class="space-y-3 rounded-lg border border-[#2e2e2e] bg-[#171717] p-4 shadow-xs">
+					<div class="text-xs font-bold uppercase text-[#71717a]">
+						Album Node
+					</div>
+					{#if song.album}
+						<div class="flex items-center gap-3 p-2 rounded bg-[#1e1e1e] border border-[#2e2e2e]">
+							<img src={song.album.coverImage} alt={song.album.title} class="h-10 w-10 rounded object-cover border border-[#2e2e2e]" />
+							<div>
+								<div class="font-heading font-bold text-xs text-white">{song.album.title}</div>
+								<div class="text-[10px] text-[#a1a1aa]">{song.album.releaseYear} Album</div>
+							</div>
+						</div>
+					{:else}
+						<div class="text-xs text-[#a1a1aa]">Single Track Release</div>
+					{/if}
 				</div>
 			</section>
-		{:else}
-			<div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-sm">
-				Song not found.
-			</div>
 		{/if}
 	{:catch error}
-		<div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-sm">
+		<div class="rounded-lg border border-[#2e2e2e] bg-[#171717] p-8 text-center text-xs text-[#a1a1aa]">
 			Failed to load song details.
 		</div>
 	{/await}

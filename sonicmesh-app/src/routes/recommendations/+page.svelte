@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import LoadingSkeleton from '$lib/components/LoadingSkeleton.svelte';
 
 	let expandedRec = $state<string | null>(null);
 	let showCypherInspector = $state(false);
 
 	async function getRecommendations() {
+		if (!browser) return [];
 		const res = await fetch('/api/recommendations');
 		if (!res.ok) throw new Error('Failed to fetch recommendations');
 		return await res.json();
@@ -17,38 +19,42 @@
 	}
 </script>
 
-<div class="space-y-8 py-2 max-w-5xl mx-auto">
+<svelte:head>
+	<title>Recommendations Console — SonicMesh Studio</title>
+</svelte:head>
+
+<div class="mx-auto max-w-5xl space-y-8 py-2">
 	<!-- Page Header -->
-	<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+	<div class="flex flex-col justify-between gap-4 border-b border-[#2e2e2e] pb-6 md:flex-row md:items-center">
 		<div>
-			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider">
-				Graph Traversal Engine
+			<div class="font-mono text-xs font-semibold uppercase tracking-wider text-[#3ecf8e]">
+				Multi-Hop Cypher Engine
 			</div>
-			<h1 class="text-3xl font-extrabold text-slate-900 font-heading mt-2">Recommended for You</h1>
-			<p class="text-xs sm:text-sm text-slate-600 mt-1">
-				Tracks matched from the artists, composers, and music styles of songs in your collection.
+			<h1 class="font-heading mt-1 text-3xl font-extrabold text-white sm:text-4xl">Recommendations Console</h1>
+			<p class="mt-1 text-xs text-[#a1a1aa] sm:text-sm">
+				Multi-hop candidate tracks weighted from creator, genre, mood, and language links in your graph.
 			</p>
 		</div>
 
 		<div>
 			<button
 				onclick={() => (showCypherInspector = !showCypherInspector)}
-				class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold font-mono transition-all shadow-sm"
+				class="sb-btn-secondary cursor-pointer px-4 py-2.5 font-mono text-xs font-semibold shadow-xs"
 			>
-				{showCypherInspector ? 'Hide Cypher Inspector' : '⚡ View Cypher Query'}
+				{showCypherInspector ? 'Hide Cypher Query' : '⚡ Inspect Cypher Query'}
 			</button>
 		</div>
 	</div>
 
 	<!-- Cypher Inspector Drawer -->
 	{#if showCypherInspector}
-		<section class="bg-slate-900 text-slate-100 p-6 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-lg">
-			<div class="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-2">
-				<span>⚡ Multi-Hop Recommendation Cypher Query</span>
-				<span class="text-[10px] text-slate-400 font-normal">CognoDB Driver v5.0</span>
+		<section class="space-y-3 rounded-lg border border-[#2e2e2e] bg-[#121212] p-6 font-mono text-xs text-white shadow-md">
+			<div class="flex items-center justify-between border-b border-[#2e2e2e] pb-2 font-bold text-[#3ecf8e]">
+				<span>⚡ Multi-Hop Recommendation openCypher Query</span>
+				<span class="text-[10px] font-normal text-[#71717a]">CognoDB Engine v5.0</span>
 			</div>
 
-			<pre class="bg-slate-950 p-4 rounded-lg overflow-x-auto text-slate-300 border border-slate-800"><code>MATCH (u:User &lcub;id: $userId&rcub;)-[l:LIKES]->(s1:Song)
+			<pre class="overflow-x-auto rounded-md border border-[#2e2e2e] bg-[#0a0a0a] p-4 text-[#ededed]"><code>MATCH (u:User &lcub;id: $userId&rcub;)-[l:LIKES]->(s1:Song)
 MATCH (s1)-[:PERFORMED|COMPOSED|HAS_GENRE|HAS_MOOD|IN_LANGUAGE]-(entity)-(s2:Song)
 WHERE NOT (u)-[:LIKES]->(s2) AND s1 &lt;&gt; s2
 WITH s2, count(DISTINCT entity) as weightScore
@@ -59,28 +65,30 @@ LIMIT 10</code></pre>
 	{/if}
 
 	<!-- Scoring Rules Legend -->
-	<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-		<div class="text-xs font-bold uppercase tracking-wider text-amber-700">Recommendation Weights</div>
-		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-xs">
-			<div class="p-3 rounded-xl bg-purple-50 border border-purple-200 text-center">
-				<div class="font-bold text-purple-700">+25 Pts</div>
-				<div class="text-[10px] text-slate-600 font-medium">Same Artist</div>
+	<div class="space-y-3 rounded-xl border border-[#2e2e2e] bg-[#171717] p-6 font-mono shadow-xs">
+		<div class="text-xs font-semibold uppercase tracking-wider text-[#3ecf8e]">
+			Multi-Hop Graph Weighting Matrix
+		</div>
+		<div class="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3 md:grid-cols-5">
+			<div class="rounded-md border border-[#a855f7]/30 bg-[#1e1e1e] p-3 text-center">
+				<div class="font-bold text-[#a855f7]">+25 Pts</div>
+				<div class="text-[10px] text-[#a1a1aa] mt-0.5">Same Artist</div>
 			</div>
-			<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
-				<div class="font-bold text-amber-700">+20 Pts</div>
-				<div class="text-[10px] text-slate-600 font-medium">Same Composer</div>
+			<div class="rounded-md border border-[#f59e0b]/30 bg-[#1e1e1e] p-3 text-center">
+				<div class="font-bold text-[#f59e0b]">+20 Pts</div>
+				<div class="text-[10px] text-[#a1a1aa] mt-0.5">Same Composer</div>
 			</div>
-			<div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-center">
-				<div class="font-bold text-rose-700">+15 Pts</div>
-				<div class="text-[10px] text-slate-600 font-medium">Same Genre</div>
+			<div class="rounded-md border border-[#3ecf8e]/30 bg-[#1e1e1e] p-3 text-center">
+				<div class="font-bold text-[#3ecf8e]">+15 Pts</div>
+				<div class="text-[10px] text-[#a1a1aa] mt-0.5">Same Genre</div>
 			</div>
-			<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-				<div class="font-bold text-emerald-700">+15 Pts</div>
-				<div class="text-[10px] text-slate-600 font-medium">Same Mood</div>
+			<div class="rounded-md border border-[#3b82f6]/30 bg-[#1e1e1e] p-3 text-center">
+				<div class="font-bold text-[#3b82f6]">+15 Pts</div>
+				<div class="text-[10px] text-[#a1a1aa] mt-0.5">Same Mood</div>
 			</div>
-			<div class="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-center">
-				<div class="font-bold text-indigo-700">+10 Pts</div>
-				<div class="text-[10px] text-slate-600 font-medium">Language Match</div>
+			<div class="rounded-md border border-[#2e2e2e] bg-[#1e1e1e] p-3 text-center">
+				<div class="font-bold text-white">+10 Pts</div>
+				<div class="text-[10px] text-[#a1a1aa] mt-0.5">Language Match</div>
 			</div>
 		</div>
 	</div>
@@ -90,114 +98,124 @@ LIMIT 10</code></pre>
 		<LoadingSkeleton variant="list" count={4} />
 	{:then recommendations}
 		{#if recommendations.length === 0}
-			<div class="bg-white p-12 text-center rounded-3xl border border-slate-200 shadow-sm space-y-4">
-				<div class="text-4xl">🎵</div>
-				<h3 class="text-lg font-bold text-slate-800">No Recommendations Yet</h3>
-				<p class="text-xs text-slate-500 max-w-md mx-auto">
-					Like a few songs in SonicMesh to generate personalized track suggestions.
+			<div class="space-y-4 rounded-xl border border-dashed border-[#2e2e2e] bg-[#171717] p-12 text-center shadow-xs font-mono">
+				<div class="text-3xl">🎵</div>
+				<h3 class="font-heading text-lg font-bold text-white">No Recommendations Generated</h3>
+				<p class="mx-auto max-w-md text-xs text-[#a1a1aa]">
+					Like songs in the catalog to generate graph recommendations.
 				</p>
-				<a href="/" class="inline-block px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-sm">
-					Explore Songs ➔
+				<a
+					href="/"
+					class="sb-btn-primary inline-block px-5 py-2.5 text-xs font-semibold"
+				>
+					Explore Catalog Songs ➔
 				</a>
 			</div>
 		{:else}
 			<div class="space-y-4">
 				{#each recommendations as item}
-					<div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
-						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+					<div class="space-y-4 rounded-xl border border-[#2e2e2e] bg-[#171717] p-6 shadow-xs">
+						<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 							<div class="flex items-center gap-4">
-								<img src={item.song.coverImage} alt={item.song.title} class="w-16 h-16 rounded-xl object-cover shadow-sm shrink-0 border border-slate-200" />
-								<div class="space-y-1">
+								<img
+									src={item.song.coverImage}
+									alt={item.song.title}
+									class="h-16 w-16 shrink-0 rounded-md border border-[#2e2e2e] object-cover shadow-xs"
+								/>
+								<div class="space-y-1 font-mono">
 									<div class="flex items-center gap-3">
-										<h3 class="text-lg font-bold text-slate-900 font-heading">{item.song.title}</h3>
-										<span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-xs font-mono">
+										<h3 class="font-heading text-xl font-bold text-white">{item.song.title}</h3>
+										<span class="rounded border border-[#2e2e2e] bg-[#1e1e1e] px-2 py-0.5 text-xs text-[#a1a1aa]">
 											{item.song.releaseYear}
 										</span>
 									</div>
-									<div class="text-xs text-slate-600 font-medium">
-										{item.artists.join(', ') || 'Various Artists'} &bull; {item.composers.join(', ')} &bull; <span class="text-indigo-600 font-bold">{item.language}</span>
+									<div class="text-xs text-[#a1a1aa]">
+										{item.artists.join(', ') || 'Various Performers'} &bull; {item.composers.join(', ')} &bull; <span class="font-bold text-[#3ecf8e]">{item.language}</span>
 									</div>
 								</div>
 							</div>
 
-							<div class="flex items-center gap-4 shrink-0">
+							<div class="flex shrink-0 items-center gap-4 font-mono">
 								<div class="w-32">
-									<div class="flex items-center justify-between text-xs font-mono font-bold mb-1">
-										<span class="text-slate-500">Match Score</span>
-										<span class="text-emerald-600">{item.score}%</span>
+									<div class="mb-1 flex items-center justify-between text-xs font-bold">
+										<span class="text-[#71717a]">Match</span>
+										<span class="text-[#3ecf8e]">{item.score}%</span>
 									</div>
-									<div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
-										<div class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 rounded-full" style="width: {item.score}%"></div>
+									<div class="h-2 w-full overflow-hidden rounded-full bg-[#262626]">
+										<div
+											class="h-full rounded-full bg-[#3ecf8e]"
+											style="width: {item.score}%"
+										></div>
 									</div>
 								</div>
 
 								<button
 									onclick={() => toggleExpand(item.song.id)}
-									class="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold transition-all"
+									class="sb-btn-secondary cursor-pointer px-4 py-2 text-xs font-semibold"
 								>
 									{expandedRec === item.song.id ? 'Hide Explanation' : 'Why this song? ➔'}
 								</button>
 							</div>
 						</div>
 
-						<div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center gap-2 font-mono">
-							<span class="text-indigo-600 font-bold shrink-0">Connection:</span>
-							<span class="truncate">{item.pathDescription}</span>
+						<div class="flex items-center gap-2 rounded-md border border-[#2e2e2e] bg-[#121212] p-3 font-mono text-xs text-white">
+							<span class="shrink-0 font-bold text-[#3ecf8e]">Connection Path:</span>
+							<span class="truncate text-[#a1a1aa]">{item.pathDescription}</span>
 						</div>
 
 						<!-- 💡 "Why this song?" Visual Path & Score Breakdown Drawer -->
 						{#if expandedRec === item.song.id}
-							<div class="pt-4 border-t border-slate-100 space-y-4 text-xs animate-fade-in">
-								<div class="font-bold text-slate-900 uppercase tracking-wider text-[11px] font-heading flex items-center gap-2">
-									<span>💡 Why is "{item.song.title}" recommended?</span>
+							<div class="sb-fade-in space-y-4 border-t border-[#2e2e2e] pt-4 text-xs font-mono">
+								<div class="text-sm font-semibold text-[#3ecf8e]">
+									⚡ Multi-Hop Graph Traversal Execution Path:
 								</div>
 
 								<!-- Visual Path Traversal Diagrams -->
-								<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 font-mono">
-									<div class="flex items-center gap-2 text-slate-700">
-										<span class="px-2 py-1 rounded bg-indigo-100 text-indigo-800 font-bold">Your liked song</span>
+								<div class="space-y-2 rounded-md border border-[#2e2e2e] bg-[#121212] p-4">
+									<div class="flex flex-wrap items-center gap-2 text-white">
+										<span class="sb-badge-rose px-2 py-0.5 font-bold">Liked Song</span>
 										<span>➔</span>
-										<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">:COMPOSED</span>
+										<span class="sb-badge-amber px-2 py-0.5 font-bold">:COMPOSED</span>
 										<span>➔</span>
-										<span class="px-2 py-1 rounded bg-slate-200 text-slate-900 font-bold">{item.composers[0] || 'Composer'}</span>
+										<span class="px-2 py-0.5 rounded bg-[#262626] font-bold">{item.composers[0] || 'Composer'}</span>
 										<span>➔</span>
-										<span class="px-2 py-1 rounded bg-emerald-100 text-emerald-900 font-bold">{item.song.title}</span>
+										<span class="sb-badge-green px-2 py-0.5 font-bold">{item.song.title}</span>
 									</div>
 
-									<div class="flex items-center gap-2 text-slate-700">
-										<span class="px-2 py-1 rounded bg-indigo-100 text-indigo-800 font-bold">Your liked song</span>
+									<div class="flex flex-wrap items-center gap-2 text-white">
+										<span class="sb-badge-rose px-2 py-0.5 font-bold">Liked Song</span>
 										<span>➔</span>
-										<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">:HAS_MOOD</span>
+										<span class="sb-badge-blue px-2 py-0.5 font-bold">:HAS_MOOD</span>
 										<span>➔</span>
-										<span class="px-2 py-1 rounded bg-slate-200 text-slate-900 font-bold">{item.moods[0] || 'Romantic'}</span>
+										<span class="px-2 py-0.5 rounded bg-[#262626] font-bold">{item.moods[0] || 'Romantic'}</span>
 										<span>➔</span>
-										<span class="px-2 py-1 rounded bg-emerald-100 text-emerald-900 font-bold">{item.song.title}</span>
+										<span class="sb-badge-green px-2 py-0.5 font-bold">{item.song.title}</span>
 									</div>
 								</div>
 
 								<!-- Point Score Breakdown Table -->
-								<div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-									<div class="px-4 py-2 bg-slate-100 font-bold text-slate-700 text-[11px] uppercase tracking-wider border-b border-slate-200 flex justify-between">
-										<span>Criteria</span>
+								<div class="overflow-hidden rounded-md border border-[#2e2e2e] bg-[#171717]">
+									<div class="flex justify-between border-b border-[#2e2e2e] bg-[#1e1e1e] px-4 py-2 text-[10px] font-bold uppercase text-[#71717a]">
+										<span>Rule Criteria</span>
 										<span>Score Points</span>
 									</div>
-									<div class="divide-y divide-slate-100 font-mono text-xs">
+									<div class="divide-y divide-[#2e2e2e] text-xs">
 										{#each item.reasons as r}
-											<div class="px-4 py-2 flex justify-between items-center">
-												<span class="text-slate-700 font-sans">{r.rule}: <span class="text-slate-500 text-[11px]">{r.explanation}</span></span>
-												<span class="text-emerald-600 font-bold">+{r.points}</span>
+											<div class="flex items-center justify-between px-4 py-2">
+												<span class="text-white">{r.rule}: <span class="text-[#a1a1aa] text-[11px]">{r.explanation}</span></span>
+												<span class="font-bold text-[#3ecf8e]">+{r.points}</span>
 											</div>
 										{/each}
-										<div class="px-4 py-2 bg-slate-50 font-bold flex justify-between items-center text-slate-900">
-											<span>Total Weighted Graph Score</span>
-											<span class="text-emerald-700 text-sm">{item.score} / 100</span>
+										<div class="flex items-center justify-between bg-[#1e1e1e] px-4 py-2 font-bold text-white">
+											<span>Total Cypher Score</span>
+											<span class="text-sm text-[#3ecf8e]">{item.score} / 100</span>
 										</div>
 									</div>
 								</div>
 
-								<div class="pt-2 flex justify-end">
-									<a href="/song/{item.song.id}" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-										Open Song Graph ➔
+								<div class="flex justify-end pt-1">
+									<a href="/song/{item.song.id}" class="text-xs font-semibold text-[#3ecf8e] hover:underline">
+										Inspect Song Node ➔
 									</a>
 								</div>
 							</div>
@@ -207,7 +225,7 @@ LIMIT 10</code></pre>
 			</div>
 		{/if}
 	{:catch error}
-		<div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-sm">
+		<div class="rounded-xl border border-[#2e2e2e] bg-[#171717] p-8 text-center text-xs font-mono text-[#a1a1aa]">
 			Failed to load recommendations.
 		</div>
 	{/await}
