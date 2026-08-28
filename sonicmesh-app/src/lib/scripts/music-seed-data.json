@@ -1,0 +1,212 @@
+{
+  "nodes": {
+    "users": [
+      { "id": "USR-001", "name": "Arjun Ramakrishnan", "created_at": "2026-01-15", "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80" },
+      { "id": "USR-002", "name": "Priya Sharma", "created_at": "2026-02-01", "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80" },
+      { "id": "USR-003", "name": "Karthik Subramanian", "created_at": "2026-02-10", "avatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&q=80" },
+      { "id": "USR-004", "name": "Ananya Roy", "created_at": "2026-03-05", "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80" }
+    ],
+    "songs": [
+      { "id": "SNG-001", "title": "Vathi Coming", "release_year": 2021, "duration_seconds": 230, "popularity": 95, "cover_image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80" },
+      { "id": "SNG-002", "title": "Arabic Kuthu - Halamithi Habibo", "release_year": 2022, "duration_seconds": 280, "popularity": 98, "cover_image": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&q=80" },
+      { "id": "SNG-003", "title": "Naa Ready", "release_year": 2023, "duration_seconds": 248, "popularity": 96, "cover_image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80" },
+      { "id": "SNG-004", "title": "Chinnanjiru Nilave", "release_year": 2023, "duration_seconds": 215, "popularity": 88, "cover_image": "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&q=80" },
+      { "id": "SNG-005", "title": "Pora Sanda", "release_year": 2020, "duration_seconds": 210, "popularity": 82, "cover_image": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80" },
+      { "id": "SNG-006", "title": "Kesariya", "release_year": 2022, "duration_seconds": 268, "popularity": 99, "cover_image": "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&q=80" },
+      { "id": "SNG-007", "title": "Tere Pyaar Mein", "release_year": 2023, "duration_seconds": 226, "popularity": 91, "cover_image": "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=600&q=80" },
+      { "id": "SNG-008", "title": "Apna Bana Le", "release_year": 2022, "duration_seconds": 261, "popularity": 97, "cover_image": "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=600&q=80" },
+      { "id": "SNG-009", "title": "Samayama", "release_year": 2023, "duration_seconds": 235, "popularity": 89, "cover_image": "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=600&q=80" },
+      { "id": "SNG-010", "title": "Uyire", "release_year": 1998, "duration_seconds": 342, "popularity": 93, "cover_image": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&q=80" },
+      { "id": "SNG-011", "title": "Nenjame", "release_year": 2020, "duration_seconds": 255, "popularity": 85, "cover_image": "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=600&q=80" },
+      { "id": "SNG-012", "title": "Kun Faya Kun", "release_year": 2011, "duration_seconds": 473, "popularity": 97, "cover_image": "https://images.unsplash.com/photo-1445985543470-41fba5c3144a?w=600&q=80" }
+    ],
+    "artists": [
+      { "id": "ART-001", "name": "Anirudh Ravichander", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Anirudh_Ravichander_at_Audi_Ritz_Style_Awards_2017.jpg" },
+      { "id": "ART-002", "name": "Jonita Gandhi", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Jonita_Gandhi_performing_at_Vitopia_2024.jpg" },
+      { "id": "ART-003", "name": "Thalapathy Vijay", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Actor_Vijay.jpg" },
+      { "id": "ART-004", "name": "Arijit Singh", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Arijit_Singh_performance_at_Mauritius_on_29_oct_2023.jpg" },
+      { "id": "ART-005", "name": "Sid Sriram", "country": "USA/India", "image": "https://upload.wikimedia.org/wikipedia/commons/2/23/Sid_Sriram.jpg" },
+      { "id": "ART-006", "name": "Haricharan", "country": "India", "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80" },
+      { "id": "ART-007", "name": "A.R. Rahman", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/0/07/A._R._Rahman.jpg" },
+      { "id": "ART-008", "name": "Javed Ali", "country": "India", "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&q=80" },
+      { "id": "ART-009", "name": "Ed Sheeran", "country": "UK", "image": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Ed_Sheeran-2013.jpg" },
+      { "id": "ART-010", "name": "Vijay Yesudas", "country": "India", "image": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500&q=80" }
+    ],
+    "composers": [
+      { "id": "CMP-001", "name": "Anirudh Ravichander", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Anirudh_Ravichander_at_Audi_Ritz_Style_Awards_2017.jpg" },
+      { "id": "CMP-002", "name": "A.R. Rahman", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/0/07/A._R._Rahman.jpg" },
+      { "id": "CMP-003", "name": "Pritam", "country": "India", "image": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Pritam_Chakraborty.jpg" },
+      { "id": "CMP-004", "name": "Hesham Abdul Wahab", "country": "India", "image": "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=500&q=80" },
+      { "id": "CMP-005", "name": "Ed Sheeran", "country": "UK", "image": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Ed_Sheeran-2013.jpg" },
+      { "id": "CMP-006", "name": "Rajesh Murugesan", "country": "India", "image": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=500&q=80" }
+    ],
+    "lyricists": [
+      { "id": "LYR-001", "name": "Karky", "country": "India" },
+      { "id": "LYR-002", "name": "Sivakarthikeyan", "country": "India" },
+      { "id": "LYR-003", "name": "Vishnu Edavan", "country": "India" },
+      { "id": "LYR-004", "name": "Amitabh Bhattacharya", "country": "India" },
+      { "id": "LYR-005", "name": "Vairamuthu", "country": "India" },
+      { "id": "LYR-006", "name": "Irshad Kamil", "country": "India" }
+    ],
+    "albums": [
+      { "id": "ALB-001", "title": "Master", "release_year": 2021, "cover_image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80" },
+      { "id": "ALB-002", "title": "Beast", "release_year": 2022, "cover_image": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&q=80" },
+      { "id": "ALB-003", "title": "Leo", "release_year": 2023, "cover_image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80" },
+      { "id": "ALB-004", "title": "Ponniyin Selvan: Part 2", "release_year": 2023, "cover_image": "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&q=80" },
+      { "id": "ALB-005", "title": "Brahmastra", "release_year": 2022, "cover_image": "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&q=80" },
+      { "id": "ALB-006", "title": "Tu Jhoothi Main Makkaar", "release_year": 2023, "cover_image": "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=600&q=80" },
+      { "id": "ALB-007", "title": "Bhediya", "release_year": 2022, "cover_image": "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=600&q=80" },
+      { "id": "ALB-008", "title": "Hi Nanna", "release_year": 2023, "cover_image": "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=600&q=80" },
+      { "id": "ALB-009", "title": "Bombay", "release_year": 1995, "cover_image": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&q=80" },
+      { "id": "ALB-010", "title": "Rockstar", "release_year": 2011, "cover_image": "https://images.unsplash.com/photo-1445985543470-41fba5c3144a?w=600&q=80" }
+    ],
+    "genres": [
+      { "id": "GNR-001", "name": "Folk Metal / Dance" },
+      { "id": "GNR-002", "name": "Kuthu / Pop" },
+      { "id": "GNR-003", "name": "Classical Fusion" },
+      { "id": "GNR-004", "name": "Romantic Ballad" },
+      { "id": "GNR-005", "name": "Sufi / Spiritual" }
+    ],
+    "moods": [
+      { "id": "MOD-001", "name": "High Energy" },
+      { "id": "MOD-002", "name": "Romantic" },
+      { "id": "MOD-003", "name": "Melancholic" },
+      { "id": "MOD-004", "name": "Soulful" },
+      { "id": "MOD-005", "name": "Party" }
+    ],
+    "languages": [
+      { "id": "LNG-001", "name": "Tamil" },
+      { "id": "LNG-002", "name": "Hindi" },
+      { "id": "LNG-003", "name": "Telugu" },
+      { "id": "LNG-004", "name": "Malayalam" },
+      { "id": "LNG-005", "name": "English" }
+    ],
+    "instruments": [
+      { "id": "INS-001", "name": "Nadaswaram & Thavil", "image": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&q=80" },
+      { "id": "INS-002", "name": "Synthesizer & Drums", "image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80" },
+      { "id": "INS-003", "name": "Acoustic Guitar", "image": "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=300&q=80" },
+      { "id": "INS-004", "name": "Flute", "image": "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=300&q=80" },
+      { "id": "INS-005", "name": "Tabla & Harmonium", "image": "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&q=80" },
+      { "id": "INS-006", "name": "Violin Ensemble", "image": "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=300&q=80" }
+    ]
+  },
+  "relationships": {
+    "performed": [
+      { "from": "ART-001", "to": "SNG-001" },
+      { "from": "ART-001", "to": "SNG-002" },
+      { "from": "ART-002", "to": "SNG-002" },
+      { "from": "ART-001", "to": "SNG-003" },
+      { "from": "ART-003", "to": "SNG-003" },
+      { "from": "ART-006", "to": "SNG-004" },
+      { "from": "ART-005", "to": "SNG-005" },
+      { "from": "ART-004", "to": "SNG-006" },
+      { "from": "ART-004", "to": "SNG-007" },
+      { "from": "ART-004", "to": "SNG-008" },
+      { "from": "ART-005", "to": "SNG-009" },
+      { "from": "ART-007", "to": "SNG-010" },
+      { "from": "ART-005", "to": "SNG-011" },
+      { "from": "ART-007", "to": "SNG-012" },
+      { "from": "ART-008", "to": "SNG-012" }
+    ],
+    "composed": [
+      { "from": "CMP-001", "to": "SNG-001" },
+      { "from": "CMP-001", "to": "SNG-002" },
+      { "from": "CMP-001", "to": "SNG-003" },
+      { "from": "CMP-002", "to": "SNG-004" },
+      { "from": "CMP-001", "to": "SNG-005" },
+      { "from": "CMP-003", "to": "SNG-006" },
+      { "from": "CMP-003", "to": "SNG-007" },
+      { "from": "CMP-003", "to": "SNG-008" },
+      { "from": "CMP-004", "to": "SNG-009" },
+      { "from": "CMP-002", "to": "SNG-010" },
+      { "from": "CMP-001", "to": "SNG-011" },
+      { "from": "CMP-002", "to": "SNG-012" }
+    ],
+    "wrote": [
+      { "from": "LYR-001", "to": "SNG-001" },
+      { "from": "LYR-002", "to": "SNG-002" },
+      { "from": "LYR-003", "to": "SNG-003" },
+      { "from": "LYR-001", "to": "SNG-004" },
+      { "from": "LYR-004", "to": "SNG-006" },
+      { "from": "LYR-004", "to": "SNG-007" },
+      { "from": "LYR-004", "to": "SNG-008" },
+      { "from": "LYR-005", "to": "SNG-010" },
+      { "from": "LYR-006", "to": "SNG-012" }
+    ],
+    "part_of": [
+      { "from": "SNG-001", "to": "ALB-001" },
+      { "from": "SNG-002", "to": "ALB-002" },
+      { "from": "SNG-003", "to": "ALB-003" },
+      { "from": "SNG-004", "to": "ALB-004" },
+      { "from": "SNG-006", "to": "ALB-005" },
+      { "from": "SNG-007", "to": "ALB-006" },
+      { "from": "SNG-008", "to": "ALB-007" },
+      { "from": "SNG-009", "to": "ALB-008" },
+      { "from": "SNG-010", "to": "ALB-009" },
+      { "from": "SNG-012", "to": "ALB-010" }
+    ],
+    "has_genre": [
+      { "from": "SNG-001", "to": "GNR-001" },
+      { "from": "SNG-002", "to": "GNR-002" },
+      { "from": "SNG-003", "to": "GNR-001" },
+      { "from": "SNG-004", "to": "GNR-003" },
+      { "from": "SNG-005", "to": "GNR-002" },
+      { "from": "SNG-006", "to": "GNR-004" },
+      { "from": "SNG-007", "to": "GNR-002" },
+      { "from": "SNG-008", "to": "GNR-004" },
+      { "from": "SNG-009", "to": "GNR-004" },
+      { "from": "SNG-010", "to": "GNR-003" },
+      { "from": "SNG-011", "to": "GNR-004" },
+      { "from": "SNG-012", "to": "GNR-005" }
+    ],
+    "has_mood": [
+      { "from": "SNG-001", "to": "MOD-001" },
+      { "from": "SNG-002", "to": "MOD-005" },
+      { "from": "SNG-003", "to": "MOD-001" },
+      { "from": "SNG-004", "to": "MOD-003" },
+      { "from": "SNG-005", "to": "MOD-001" },
+      { "from": "SNG-006", "to": "MOD-002" },
+      { "from": "SNG-007", "to": "MOD-005" },
+      { "from": "SNG-008", "to": "MOD-002" },
+      { "from": "SNG-009", "to": "MOD-002" },
+      { "from": "SNG-010", "to": "MOD-004" },
+      { "from": "SNG-011", "to": "MOD-003" },
+      { "from": "SNG-012", "to": "MOD-004" }
+    ],
+    "in_language": [
+      { "from": "SNG-001", "to": "LNG-001" },
+      { "from": "SNG-002", "to": "LNG-001" },
+      { "from": "SNG-003", "to": "LNG-001" },
+      { "from": "SNG-004", "to": "LNG-001" },
+      { "from": "SNG-005", "to": "LNG-001" },
+      { "from": "SNG-006", "to": "LNG-002" },
+      { "from": "SNG-007", "to": "LNG-002" },
+      { "from": "SNG-008", "to": "LNG-002" },
+      { "from": "SNG-009", "to": "LNG-003" },
+      { "from": "SNG-010", "to": "LNG-001" },
+      { "from": "SNG-011", "to": "LNG-001" },
+      { "from": "SNG-012", "to": "LNG-002" }
+    ],
+    "features": [
+      { "from": "SNG-001", "to": "INS-001" },
+      { "from": "SNG-002", "to": "INS-002" },
+      { "from": "SNG-003", "to": "INS-002" },
+      { "from": "SNG-004", "to": "INS-004" },
+      { "from": "SNG-006", "to": "INS-006" },
+      { "from": "SNG-008", "to": "INS-003" },
+      { "from": "SNG-009", "to": "INS-004" },
+      { "from": "SNG-010", "to": "INS-006" },
+      { "from": "SNG-012", "to": "INS-005" }
+    ],
+    "user_liked": [
+      { "from": "USR-001", "to": "SNG-001" },
+      { "from": "USR-001", "to": "SNG-002" },
+      { "from": "USR-001", "to": "SNG-006" },
+      { "from": "USR-002", "to": "SNG-006" },
+      { "from": "USR-002", "to": "SNG-008" },
+      { "from": "USR-002", "to": "SNG-012" },
+      { "from": "USR-003", "to": "SNG-004" },
+      { "from": "USR-003", "to": "SNG-010" }
+    ]
+  }
+}
