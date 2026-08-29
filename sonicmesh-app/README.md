@@ -69,6 +69,27 @@ graph TD
 
 ---
 
+## 👤 Single User Context & Active Session Architecture
+
+To streamline evaluator testing and demonstrate real-time graph reactivity without authentication friction, **SonicMesh Studio operates under a Single Active User Profile (`USR-001`)**:
+
+1. **Who is the Live User?**:
+   - The person currently browsing and interacting with the live application represents the active user (`USR-001`).
+2. **Real-Time Graph Reactivity**:
+   - When you click the heart icon (❤️) on any track card, the application executes Cypher write queries (`MERGE` / `DELETE`) to update the relationship edge:
+     ```cypher
+     (u:User {id: 'USR-001'})-[:LIKES]->(s:Song {id: $songId})
+     ```
+3. **Dynamic Re-computation Across Views**:
+   - Toggling a song's liked state dynamically recalculates graph metrics in real time:
+     - **Music DNA Taste Profiler** (`/api/dna`): Re-aggregates top genres, moods, and composers.
+     - **Explainable Recommendations Engine** (`/recommendations`): Re-evaluates 2-hop graph candidates and updates execution trace badges.
+     - **Liked Graph Connection Mesh** (`/liked-connections`): Redraws visual node-edge connections.
+4. **Design Rationale**:
+   - Operating on a single unified user profile eliminates sign-up/login barriers, allowing evaluators to immediately interact with the live application demo, like/unlike tracks, and watch the graph database adapt instantly.
+
+---
+
 ## 🔑 Environment Secrets (`.env`) & Security
 
 All database connection parameters are stored in the root `.env` file and accessed securely via `$env/static/private` in SvelteKit server modules ([cognodb.ts](file:///d:/sonicmesh-app/sonicmesh-app/src/lib/server/cognodb.ts)). Secrets are never exposed to client-side code or committed to public version control.
