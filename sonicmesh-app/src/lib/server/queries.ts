@@ -1,4 +1,10 @@
 import { runReadQuery, runWriteQuery, verifyCognoDBConnection } from './cognodb';
+import {
+	DEFAULT_SONG_IMAGE,
+	DEFAULT_ALBUM_IMAGE,
+	DEFAULT_ARTIST_IMAGE,
+	DEFAULT_COMPOSER_IMAGE
+} from '../constants/images';
 
 
 export async function getHomeStats() {
@@ -79,10 +85,10 @@ export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001
 			releaseYear: r.releaseYear || 2023,
 			durationSeconds: r.durationSeconds || 240,
 			popularity: r.popularity || 85,
-			coverImage: r.coverImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
-			artists: (r.artists || []).filter((a: any) => a.id),
-			composers: (r.composers || []).filter((c: any) => c.id),
-			album: r.album && r.album.id ? r.album : undefined,
+			coverImage: r.coverImage || DEFAULT_SONG_IMAGE,
+			artists: (r.artists || []).filter((a: any) => a.id).map((a: any) => ({ ...a, image: a.image || DEFAULT_ARTIST_IMAGE })),
+			composers: (r.composers || []).filter((c: any) => c.id).map((c: any) => ({ ...c, image: c.image || DEFAULT_COMPOSER_IMAGE })),
+			album: r.album && r.album.id ? { ...r.album, coverImage: r.album.coverImage || DEFAULT_ALBUM_IMAGE } : undefined,
 			genres: (r.genres || []).filter((g: any) => g.id),
 			moods: (r.moods || []).filter((m: any) => m.id),
 			languages: (r.languages || []).filter((l: any) => l.id),
@@ -114,9 +120,16 @@ export async function searchEntities(queryStr: string) {
 		const composers: any[] = [];
 
 		results.forEach((r) => {
-			if (r.label === 'Song') songs.push(r);
-			else if (r.label === 'Artist') artists.push(r);
-			else if (r.label === 'Composer') composers.push(r);
+			if (r.label === 'Song') {
+				r.image = r.image || DEFAULT_SONG_IMAGE;
+				songs.push(r);
+			} else if (r.label === 'Artist') {
+				r.image = r.image || DEFAULT_ARTIST_IMAGE;
+				artists.push(r);
+			} else if (r.label === 'Composer') {
+				r.image = r.image || DEFAULT_COMPOSER_IMAGE;
+				composers.push(r);
+			}
 		});
 
 		return { songs, artists, composers };
@@ -167,11 +180,11 @@ export async function getSongDetail(songId: string, currentUserId = 'USR-001'): 
 			releaseYear: r.releaseYear,
 			durationSeconds: r.durationSeconds,
 			popularity: r.popularity,
-			coverImage: r.coverImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
-			artists: (r.artists || []).filter((a: any) => a.id),
-			composers: (r.composers || []).filter((c: any) => c.id),
+			coverImage: r.coverImage || DEFAULT_SONG_IMAGE,
+			artists: (r.artists || []).filter((a: any) => a.id).map((a: any) => ({ ...a, image: a.image || DEFAULT_ARTIST_IMAGE })),
+			composers: (r.composers || []).filter((c: any) => c.id).map((c: any) => ({ ...c, image: c.image || DEFAULT_COMPOSER_IMAGE })),
 			lyricists: (r.lyricists || []).filter((l: any) => l.id),
-			album: r.album && r.album.id ? r.album : undefined,
+			album: r.album && r.album.id ? { ...r.album, coverImage: r.album.coverImage || DEFAULT_ALBUM_IMAGE } : undefined,
 			genres: (r.genres || []).filter((g: any) => g.id),
 			moods: (r.moods || []).filter((m: any) => m.id),
 			languages: (r.languages || []).filter((lang: any) => lang.id),
@@ -207,7 +220,7 @@ export async function addSongWithRelationships(params: {
 	const moodId = `MOD-${Date.now()}`;
 	const langId = `LNG-${Date.now()}`;
 	const instId = `INS-${Date.now()}`;
-	const coverImage = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80';
+	const coverImage = DEFAULT_SONG_IMAGE;
 
 	const cypher = `
 		CREATE (s:Song {
@@ -220,11 +233,11 @@ export async function addSongWithRelationships(params: {
 		})
 
 		MERGE (a:Artist {name: $artistName})
-		ON CREATE SET a.id = $artistId, a.country = 'India', a.image = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80'
+		ON CREATE SET a.id = $artistId, a.country = 'India', a.image = '${DEFAULT_ARTIST_IMAGE}'
 		MERGE (a)-[:PERFORMED]->(s)
 
 		MERGE (c:Composer {name: $composerName})
-		ON CREATE SET c.id = $composerId, c.country = 'India', c.image = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80'
+		ON CREATE SET c.id = $composerId, c.country = 'India', c.image = '${DEFAULT_COMPOSER_IMAGE}'
 		MERGE (c)-[:COMPOSED]->(s)
 
 		WITH s
@@ -374,7 +387,7 @@ export async function getExplainableRecommendations(userId = 'USR-001'): Promise
 				: `Multi-hop relationship path derived from your taste graph.`;
 
 			return {
-				song: { id: r.id, title: r.title, releaseYear: r.releaseYear, durationSeconds: r.durationSeconds, popularity: r.popularity, coverImage: r.coverImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80' },
+				song: { id: r.id, title: r.title, releaseYear: r.releaseYear, durationSeconds: r.durationSeconds, popularity: r.popularity, coverImage: r.coverImage || DEFAULT_SONG_IMAGE },
 				artists: (r.artists || []).filter(Boolean),
 				composers: (r.composers || []).filter(Boolean),
 				genres: (r.genres || []).filter(Boolean),
@@ -382,6 +395,7 @@ export async function getExplainableRecommendations(userId = 'USR-001'): Promise
 				language: r.language || 'Music',
 				score: finalScore,
 				reasons: reasons.slice(0, 4),
+				pathLinks: pathLinks.filter((p: any) => p.likedTitle && p.connectorName),
 				pathDescription
 			};
 		});
@@ -506,7 +520,7 @@ export async function getArtistDetail(artistName: string) {
 			LIMIT 1
 		`, { name: artistName });
 
-		const artist = artistNodes[0] || { name: artistName, label: 'Artist', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80', country: 'India' };
+		const artist = artistNodes[0] || { name: artistName, label: 'Artist', image: DEFAULT_ARTIST_IMAGE, country: 'India' };
 
 		const songs = await runReadQuery(`
 			MATCH (s:Song)-[:PERFORMED|COMPOSED]-(a)
@@ -529,7 +543,7 @@ export async function getArtistDetail(artistName: string) {
 	} catch (err) {
 		console.error('Error fetching artist detail:', err);
 		return {
-			artist: { name: artistName, label: 'Artist', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80', country: 'India' },
+			artist: { name: artistName, label: 'Artist', image: DEFAULT_ARTIST_IMAGE, country: 'India' },
 			songs: [],
 			collaborators: []
 		};
@@ -569,7 +583,7 @@ export async function getLikedSongsConnections(userId = 'USR-001') {
 			releaseYear: r.releaseYear || 2023,
 			durationSeconds: r.durationSeconds || 240,
 			popularity: r.popularity || 85,
-			coverImage: r.coverImage || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80',
+			coverImage: r.coverImage || DEFAULT_SONG_IMAGE,
 			artists: (r.artists || []).filter((a: any) => a.id),
 			composers: (r.composers || []).filter((c: any) => c.id),
 			album: r.album && r.album.id ? r.album : undefined,
@@ -777,22 +791,24 @@ export async function getUserMusicDNA(userId = 'USR-001') {
 		if (!r || !r.totalLikedCount || r.totalLikedCount === 0) {
 			// Fallback DNA based on top catalog tracks
 			return {
-				totalLikedCount: 4,
+				totalLikedCount: 0,
 				topGenres: [
-					{ name: 'Melody', percentage: 42, icon: '🎧' },
-					{ name: 'Pop / Dance', percentage: 33, icon: '⚡' },
-					{ name: 'Classical Fusion', percentage: 25, icon: '🎻' }
+					// { name: 'Melody', percentage: 42, icon: '🎧' },
+					// { name: 'Pop / Dance', percentage: 33, icon: '⚡' },
+					// { name: 'Classical Fusion', percentage: 25, icon: '🎻' }
 				],
 				topMoods: [
-					{ name: 'Romantic', percentage: 45, icon: '❤️' },
-					{ name: 'High Energy', percentage: 35, icon: '🔥' },
-					{ name: 'Soulful', percentage: 20, icon: '✨' }
+					// { name: 'Romantic', percentage: 45, icon: '❤️' },
+					// { name: 'High Energy', percentage: 35, icon: '🔥' },
+					// { name: 'Soulful', percentage: 20, icon: '✨' }
 				],
 				topLanguages: [
-					{ name: 'Tamil', percentage: 55 },
-					{ name: 'Hindi', percentage: 45 }
+					// { name: 'Tamil', percentage: 55 },
+					// { name: 'Hindi', percentage: 45 }
 				],
-				topComposers: ['Harris Jayaraj', 'A.R. Rahman', 'Anirudh Ravichander']
+				topComposers: [
+					// 'Harris Jayaraj', 'A.R. Rahman', 'Anirudh Ravichander'
+				]
 			};
 		}
 

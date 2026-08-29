@@ -1,9 +1,24 @@
 import neo4j, { type Driver } from 'neo4j-driver';
-import { COGNODB_URI, COGNODB_USER, COGNODB_PASSWORD } from '$env/static/private';
+import dotenv from 'dotenv';
 
-const uri = COGNODB_URI || 'bolt+s://db-8d0153a1.bravo.databases.cognodb.com';
-const user = COGNODB_USER || 'cognodb';
-const password = COGNODB_PASSWORD || '';
+dotenv.config();
+
+let envUri = process.env.COGNODB_URI;
+let envUser = process.env.COGNODB_USER;
+let envPassword = process.env.COGNODB_PASSWORD;
+
+try {
+	const staticEnv = await import(/* @vite-ignore */ '$env/static/private');
+	if (staticEnv.COGNODB_URI) envUri = staticEnv.COGNODB_URI;
+	if (staticEnv.COGNODB_USER) envUser = staticEnv.COGNODB_USER;
+	if (staticEnv.COGNODB_PASSWORD) envPassword = staticEnv.COGNODB_PASSWORD;
+} catch (_) {
+	// Fallback to dotenv for CLI script execution
+}
+
+const uri = envUri || 'bolt+s://db-8d0153a1.bravo.databases.cognodb.com';
+const user = envUser || 'cognodb';
+const password = envPassword || '';
 
 export const driver: Driver = neo4j.driver(
 	uri,

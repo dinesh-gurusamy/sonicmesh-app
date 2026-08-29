@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
-		"seed": "tsx src/lib/scripts/seed.ts",
+		"seed": "npx tsx src/lib/scripts/seed.ts",
 		"build": "vite build && npm run prepack",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EntityIcon from './EntityIcon.svelte';
 	type Node = {
 		id: string;
 		label: string;
@@ -107,11 +108,11 @@
 				<span class="w-2.5 h-2.5 rounded-full bg-[#3ecf8e] animate-pulse"></span>
 				<h2 class="font-heading text-lg font-bold text-white">Liked Graph Connection Visualizer</h2>
 				<span class="rounded bg-[#1c392b] border border-[#2b5940] px-2 py-0.5 text-[10px] font-bold text-[#3ecf8e]">
-					{positionedNodes.length} Nodes &bull; {linksWithPositions.length} Edges
+					{positionedNodes.length} Saved Items &bull; {linksWithPositions.length} Connections
 				</span>
 			</div>
 			<p class="mt-1 text-xs text-[#a1a1aa] font-sans">
-				Hierarchical openCypher graph mapping liked tracks to performers, composers, and album nodes.
+				Interactive visual map of your liked tracks, performers, composers, and albums.
 			</p>
 		</div>
 
@@ -208,15 +209,31 @@
 								<!-- Accent Strip -->
 								<rect x={-CARD_W / 2} y={-CARD_H / 2} width="4" height={CARD_H} rx="2" ry="2" fill={tier.accent} />
 
-								{#if node.image}
-									<image href={node.image} x={-CARD_W / 2 + 6} y={-CARD_H / 2 + 6} width="32" height="32"
-										clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
-								{:else}
-									<rect x={-CARD_W / 2 + 6} y={-CARD_H / 2 + 6} width="32" height="32" rx="6" ry="6" fill="#262626" />
-									<text x={-CARD_W / 2 + 22} y={-CARD_H / 2 + 22} text-anchor="middle" fill={tier.accent} font-size="11" font-weight="700">
-										{node.name.substring(0, 2).toUpperCase()}
-									</text>
-								{/if}
+								<!-- Sleek Vector Icon Badge -->
+								<g transform="translate({-CARD_W / 2 + 6}, {-CARD_H / 2 + 6})">
+									<rect width="32" height="32" rx="6" ry="6" fill={tier.accent} fill-opacity="0.15" stroke={tier.accent} stroke-opacity="0.4" stroke-width="1" />
+									{#if tierOf(node) === 'song'}
+										<circle cx="16" cy="16" r="10" fill="#121212" stroke="#f43f5e" stroke-width="1.5"/>
+										<circle cx="16" cy="16" r="7" fill="none" stroke="#262626" stroke-width="1"/>
+										<circle cx="16" cy="16" r="3.5" fill="#f43f5e"/>
+										<circle cx="16" cy="16" r="1" fill="#121212"/>
+									{:else if tierOf(node) === 'artist'}
+										<rect x="12" y="7" width="8" height="11" rx="4" fill="#a855f7"/>
+										<path d="M 9 13 C 9 17 11 20 16 20 C 21 20 23 17 23 13" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/>
+										<line x1="16" y1="20" x2="16" y2="24" stroke="#a855f7" stroke-width="1.5"/>
+										<line x1="12" y1="24" x2="20" y2="24" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/>
+									{:else if tierOf(node) === 'composer'}
+										<line x1="6" y1="10" x2="26" y2="10" stroke="#78350f" stroke-width="1"/>
+										<line x1="6" y1="14" x2="26" y2="14" stroke="#78350f" stroke-width="1"/>
+										<line x1="6" y1="18" x2="26" y2="18" stroke="#78350f" stroke-width="1"/>
+										<line x1="6" y1="22" x2="26" y2="22" stroke="#78350f" stroke-width="1"/>
+										<path d="M 17 7 C 15 7 13 9 13 12 C 13 16 17 17 17 20 C 17 23 13 24 11 21 C 10 19 11 17 13 16 C 11 16 9 18 9 20 C 9 23 12 26 16 26 C 20 26 22 22 22 19 C 22 14 17 12 17 10 C 17 8 18 8 19 8 Z" fill="#f59e0b"/>
+									{:else}
+										<rect x="7" y="7" width="18" height="18" rx="3" fill="#0f172a" stroke="#3ecf8e" stroke-width="1.2"/>
+										<circle cx="16" cy="16" r="6" fill="#181825" stroke="#3ecf8e" stroke-width="1"/>
+										<circle cx="16" cy="16" r="2" fill="#3ecf8e"/>
+									{/if}
+								</g>
 
 								<text x={-CARD_W / 2 + 44} y="-3" fill="#ededed" font-size="11" font-weight="700" class="select-none font-sans">
 									{node.name.length > 14 ? node.name.substring(0, 13) + '…' : node.name}
@@ -235,19 +252,16 @@
 					<div class="sb-fade-in absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-lg border border-[#333] bg-[#171717] p-4 shadow-2xl">
 						<div class="flex items-center gap-3.5 overflow-hidden">
 							<div class="relative shrink-0">
-								{#if selectedNode.image}
-									<img src={selectedNode.image} alt={selectedNode.name} class="h-12 w-12 rounded-md border border-[#2e2e2e] object-cover" />
-								{:else}
-									<div class="flex h-12 w-12 items-center justify-center rounded-md text-sm font-bold bg-[#262626]" style="color: {tier.accent}">
-										{selectedNode.name.substring(0, 2).toUpperCase()}
-									</div>
-								{/if}
+								<EntityIcon
+									type={selectedNode.label === 'Composer' ? 'composer' : selectedNode.label === 'Artist' ? 'artist' : selectedNode.label === 'Album' ? 'album' : 'song'}
+									class="h-12 w-12 shrink-0"
+								/>
 								<span class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-[#171717]" style="background-color: {tier.accent}"></span>
 							</div>
 							<div class="overflow-hidden">
 								<div class="truncate font-heading text-sm font-bold text-white">{selectedNode.name}</div>
 								<div class="mt-0.5 text-xs text-[#a1a1aa] font-mono">
-									{selectedNode.label === 'Song' ? 'User Liked Song Node' : `${tier.label} Node &bull; connects songs in graph`}
+									{selectedNode.label === 'Song' ? 'Saved Liked Song' : `${tier.label} &bull; connects songs in your collection`}
 								</div>
 							</div>
 						</div>
