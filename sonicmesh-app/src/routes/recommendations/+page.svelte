@@ -7,17 +7,6 @@
 	let showTechnicalQuery = $state(false);
 	let isRefreshing = $state(false);
 
-	// Quick seed tracks for empty state or quick taste adjustment
-	const popularSeedSongs = [
-		{ id: 'SNG-001', title: 'Naatu Naatu', artist: 'Rahul Sipligunj', album: 'RRR' },
-		{ id: 'SNG-006', title: 'Dhivara', artist: 'Ramya Behara', album: 'Baahubali: The Beginning' },
-		{ id: 'SNG-011', title: 'Saahore Baahubali', artist: 'M. M. Keeravani', album: 'Baahubali: The Conclusion' },
-		{ id: 'SNG-041', title: 'Vaseegara', artist: 'K. S. Chithra', album: 'Minnale' },
-		{ id: 'SNG-061', title: 'Arabic Kuthu', artist: 'Anirudh Ravichander', album: 'Beast' },
-		{ id: 'SNG-066', title: 'Enjoy Enjaami', artist: 'Dhee & Arivu', album: 'Enjoy Enjaami' },
-		{ id: 'SNG-081', title: 'Roja Janeman', artist: 'S. P. Balasubrahmanyam', album: 'Roja' }
-	];
-
 	async function getRecommendations() {
 		if (!browser) return [];
 		const res = await fetch('/api/recommendations');
@@ -134,23 +123,23 @@
 		</div>
 	</div>
 
-	<!-- Active Liked Seeds Strip -->
+	<!-- Active Liked Seeds Strip (Only rendered when user has liked songs) -->
 	{#await likedPromise}
 		<div class="h-12 animate-pulse rounded-lg border border-[#2e2e2e] bg-[#171717]"></div>
 	{:then likedData}
 		{@const likedSongs = (likedData && likedData.likedSongs) ? likedData.likedSongs : []}
-		<div class="rounded-xl border border-[#2e2e2e] bg-[#171717] p-4 shadow-xs">
-			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-[#f43f5e]">♥</span>
-					<span class="text-xs font-bold text-white uppercase">Your Active Taste Seeds ({likedSongs.length}):</span>
+		{#if likedSongs.length > 0}
+			<div class="rounded-xl border border-[#2e2e2e] bg-[#171717] p-4 shadow-xs">
+				<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div class="flex items-center gap-2">
+						<span class="text-sm text-[#f43f5e]">♥</span>
+						<span class="text-xs font-bold text-white uppercase">Your Active Taste Seeds ({likedSongs.length}):</span>
+					</div>
+					<a href="/catalog" class="text-[11px] text-[#3ecf8e] hover:underline">
+						+ Browse & Like More Tracks in Catalog ➔
+					</a>
 				</div>
-				<a href="/catalog" class="text-[11px] text-[#3ecf8e] hover:underline">
-					+ Browse & Like More Tracks in Catalog ➔
-				</a>
-			</div>
 
-			{#if likedSongs.length > 0}
 				<div class="mt-3 flex flex-wrap items-center gap-2">
 					{#each likedSongs as song}
 						<div
@@ -173,12 +162,8 @@
 						</div>
 					{/each}
 				</div>
-			{:else}
-				<p class="mt-2 text-xs text-[#a1a1aa]">
-					No active seed tracks selected yet. Pick from the quick starter tracks below or explore the catalog!
-				</p>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	{/await}
 
 	<!-- Technical Query Drawer -->
@@ -219,7 +204,7 @@ ORDER BY sharedScore DESC LIMIT 20;</code
 		{#if !recommendations || recommendations.length === 0}
 			<!-- Empty State when User has 0 Liked Songs or No Matches -->
 			<div
-				class="space-y-6 rounded-xl border border-dashed border-[#2e2e2e] bg-[#171717] p-10 text-center font-mono shadow-md"
+				class="space-y-6 rounded-2xl border border-dashed border-[#2e2e2e] bg-[#171717] p-12 text-center font-mono shadow-md"
 			>
 				<div
 					class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#26151a] text-3xl text-[#f43f5e]"
@@ -227,37 +212,18 @@ ORDER BY sharedScore DESC LIMIT 20;</code
 					♥
 				</div>
 				<div class="space-y-2">
-					<h3 class="font-heading text-xl font-bold text-white">Seed Your Taste Profile</h3>
+					<h3 class="font-heading text-xl font-bold text-white">No Liked Songs Yet</h3>
 					<p class="mx-auto max-w-md font-sans text-xs leading-relaxed text-[#a1a1aa]">
-						Click any song below to like it and instantly compute personalized graph recommendations from our 100-song dataset!
+						Your taste profile is currently empty! Explore the catalog and like songs you love (❤️) to build your profile and generate personalized graph recommendations.
 					</p>
 				</div>
 
-				<!-- Quick Starter Seed Badges -->
-				<div class="mx-auto max-w-2xl pt-2">
-					<div class="text-[11px] font-bold text-[#71717a] uppercase pb-3">
-						Popular Starter Tracks (Click to seed):
-					</div>
-					<div class="flex flex-wrap items-center justify-center gap-2.5">
-						{#each popularSeedSongs as seed}
-							<button
-								onclick={() => toggleLike(seed.id)}
-								class="flex items-center gap-2 rounded-lg border border-[#2e2e2e] bg-[#1e1e1e] px-3.5 py-2 text-xs font-semibold text-white transition-all hover:border-[#3ecf8e] hover:bg-[#252525] cursor-pointer"
-							>
-								<span class="text-[#3ecf8e]">+</span>
-								<span>{seed.title}</span>
-								<span class="text-[10px] text-[#71717a]">({seed.album})</span>
-							</button>
-						{/each}
-					</div>
-				</div>
-
-				<div class="pt-4">
+				<div class="pt-3">
 					<a
 						href="/catalog"
-						class="sb-btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold"
+						class="sb-btn-primary inline-flex items-center gap-2 px-6 py-3 text-xs font-semibold"
 					>
-						Explore Full Songs Catalog ➔
+						Explore Songs Catalog ➔
 					</a>
 				</div>
 			</div>

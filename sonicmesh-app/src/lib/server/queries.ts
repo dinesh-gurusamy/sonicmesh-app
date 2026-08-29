@@ -234,22 +234,12 @@ class InMemoryGraphStore {
 			});
 
 			dataJson.relationships.features?.forEach((rel) => {
-				if (!this.songToInstruments.has(rel.from)) this.songToInstruments.set(rel.from, new Set());
-				this.songToInstruments.get(rel.from)!.add(rel.to);
 				if (!this.instrumentToSongs.has(rel.to)) this.instrumentToSongs.set(rel.to, new Set());
 				this.instrumentToSongs.get(rel.to)!.add(rel.from);
 			});
 
-			// User Likes from JSON
-			dataJson.relationships.user_liked?.forEach((rel) => {
-				if (!this.userLikes.has(rel.from)) this.userLikes.set(rel.from, new Set());
-				this.userLikes.get(rel.from)!.add(rel.to);
-			});
-
-			// Initial default taste profile for primary user USR-001 if empty
-			if (!this.userLikes.has('USR-001') || this.userLikes.get('USR-001')!.size === 0) {
-				this.userLikes.set('USR-001', new Set(['SNG-001', 'SNG-006', 'SNG-011', 'SNG-041']));
-			}
+			// User Likes initialized empty
+			this.userLikes.set('USR-001', new Set());
 
 			this.isLoaded = true;
 			console.log(`[GraphStore] Loaded ${this.songs.size} songs, ${this.albums.size} albums, ${this.artists.size} artists, ${this.composers.size} composers from seed.`);
@@ -1252,7 +1242,18 @@ export async function getLikedSongsConnections(userId = 'USR-001') {
 	let likedSongs: SongDetail[] = likedIds.map((id) => graphStore.getSongDetailed(id, userId)).filter(Boolean) as SongDetail[];
 
 	if (likedSongs.length === 0) {
-		likedSongs = graphStore.getAllSongsDetailed(userId, 4);
+		return {
+			likedSongs: [],
+			pairwiseConnections: [],
+			sharedConnectors: [],
+			graphData: { nodes: [], links: [] },
+			summaryStats: {
+				totalLikedSongs: 0,
+				pairwiseConnectionsCount: 0,
+				uniqueConnectorsCount: 0,
+				topConnector: 'None'
+			}
+		};
 	}
 
 	const pairwiseMap = new Map<string, any>();

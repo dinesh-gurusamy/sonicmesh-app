@@ -2,7 +2,7 @@
 	"name": "sonicmesh-app",
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --host",
 		"seed": "npx tsx src/lib/scripts/seed.ts",
 		"build": "vite build && npm run prepack",
 		"preview": "vite preview",
