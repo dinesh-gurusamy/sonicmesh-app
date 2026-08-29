@@ -1,64 +1,64 @@
-# SonicMesh — Interactive Music Discovery Engine
+# 🎵 SonicMesh Studio — Music Knowledge Graph & Recommendation Engine
 
-> **WEXA AI Take-Home Assessment Project**  
-> **Candidate**: Dinesh G  
-> **Position**: Software Engineer (Full-Stack / Web Developer)  
-> **Database Layer**: CognoDB Cloud (openCypher / Neo4j Driver)  
-> **Application Tech Stack**: SvelteKit, TypeScript, Tailwind CSS  
-
----
-
-## 🌟 Executive Overview
-
-**SonicMesh** is a graph database application built to explore complex, multi-dimensional relationships within the music industry. It models how tracks, performers, composers, lyricists, albums, genres, moods, languages, and instruments are interconnected.
-
-Instead of flat relational tables, **SonicMesh** utilizes **CognoDB** to enable multi-hop Cypher traversals—allowing users to discover explainable song recommendations and calculate shortest relationship paths connecting any two artists or songs in real time.
+> **WEXA AI — Take-Home Assignment: Build a Graph Database Application**  
+> **Candidate**: Dinesh Gurusamy  
+> **Repository**: [https://github.com/dinesh-gurusamy/sonicmesh-app](https://github.com/dinesh-gurusamy/sonicmesh-app)  
+> **Database Layer**: [CognoDB Cloud](https://console.cognodb.com) (openCypher / Neo4j Bolt Driver)  
+> **Tech Stack**: SvelteKit 2, TypeScript, Svelte 5 Runes, Tailwind CSS  
 
 ---
 
-## ❓ Why a Graph Database?
+## 📌 Executive Summary & Application Overview
 
-Relational SQL databases store data in isolated tables linked by foreign keys and join tables. In a music application:
+**SonicMesh Studio** is a full-stack, graph-native web application designed to solve complex data relationship discovery in the music domain. It models the intricate, multi-dimensional connections between songs, performers, composers, lyricists, albums, genres, moods, languages, and featured instruments.
 
-1. **Relational Bottleneck (JOIN Hell)**:
-   A query asking *"Find songs recommended for user X based on artists, composers, genres, and moods of songs they liked"* requires joining 7 to 9 tables (`users`, `user_likes`, `songs`, `song_artists`, `artists`, `song_composers`, `composers`, `song_genres`, `genres`). In SQL, multi-table JOINs incur severe runtime performance degradation as data scales.
+Instead of relying on flat relational tables or opaque black-box machine learning models, **SonicMesh** leverages **CognoDB** over the openCypher protocol to execute multi-hop path traversals. This provides **explainable recommendations** (showing the exact relationship path why a track is suggested) and computes **shortest connection paths** between any two creators or songs in real time.
 
-2. **Variable-Length Path Finding**:
-   Calculating *"How is Song A connected to Artist B through shared collaborators within 5 degrees of separation?"* is practically impossible or extremely inefficient in relational SQL without expensive recursive Common Table Expressions (CTEs).
+---
 
-3. **The Graph Advantage**:
-   With **CognoDB** and **openCypher**, relationships are first-class entities. 
-   - **Pattern Matching**: Traversing from a `Song` node through `:PERFORMED` to an `Artist` node and onto another `Song` node is a direct pointer traversal \(O(1)\) per hop.
-   - **Shortest Path Engine**: `shortestPath((a)-[*..5]-(b))` computes multi-hop relationship chains across the graph in milliseconds.
-   - **Explainability**: Graph traversal paths explicitly state *why* a song was recommended (e.g. `Connected via Artist A.R. Rahman ➔ Composer ➔ Shared Genre`).
+## ❓ Why a Graph Database? (Relational vs. Graph Comparison)
+
+Relational (SQL) databases organize data into rigid tables connected by foreign keys and join tables. In a music recommendation system, SQL encounters critical architectural bottlenecks:
+
+### 1. Relational Bottleneck (JOIN Explosion)
+A query such as *"Recommend songs for User X based on shared performers, composers, genres, and moods from tracks they liked"* in SQL requires joining 8+ tables (`users`, `user_likes`, `songs`, `song_artists`, `artists`, `song_composers`, `composers`, `song_genres`, `genres`, `song_moods`, `moods`). In SQL databases, multi-table `JOIN` operations incur exponential $O(N^k)$ performance degradation as the dataset grows.
+
+### 2. Variable-Length Path Traversals
+Finding *"How is Song A connected to Artist B through shared collaborators within 5 degrees of separation?"* requires recursive Common Table Expressions (CTEs) or nested subqueries in SQL, which are computationally prohibitive and difficult to maintain.
+
+### 3. The Graph Advantage with CognoDB & openCypher
+In **CognoDB**, relationships are first-class primitives stored as direct memory pointers:
+- **Direct Edge Traversal ($O(1)$ per hop)**: Navigating from `(:Song)` $\rightarrow$ `:PERFORMED` $\rightarrow$ `(:Artist)` $\rightarrow$ `:PERFORMED` $\rightarrow$ `(:Song)` follows native index-free adjacency pointers in constant time.
+- **Native Shortest Path Calculation**: `shortestPath((a)-[*..5]-(b))` evaluates multi-hop relationship chains across the graph network in milliseconds.
+- **Path Explainability**: Graph path patterns inherently explain recommendations (e.g., `Vaseegara` $\rightarrow$ `:COMPOSED` $\rightarrow$ `Harris Jayaraj` $\rightarrow$ `Munbe Vaa (+20 Pts)`).
 
 ---
 
 ## 📐 Graph Data Model
 
-The graph dataset consists of **labeled nodes** connected by **typed, directional relationships**:
+The graph dataset models entities as **labeled nodes** linked by **typed, directional relationships**:
 
 ```mermaid
 graph TD
-    User(["User (User Node)"]) -- ":LIKES" --> Song(["Song Node"])
-    Song -- ":PERFORMED" --> Artist(["Artist Node"])
-    Song -- ":COMPOSED" --> Composer(["Composer Node"])
-    Song -- ":WRITTEN_BY" --> Lyricist(["Lyricist Node"])
-    Song -- ":PART_OF" --> Album(["Album Node"])
-    Song -- ":HAS_GENRE" --> Genre(["Genre Node"])
-    Song -- ":HAS_MOOD" --> Mood(["Mood Node"])
-    Song -- ":IN_LANGUAGE" --> Language(["Language Node"])
-    Song -- ":FEATURES" --> Instrument(["Instrument Node"])
+    User(["User (:User)"]) -- ":LIKES" --> Song(["Song (:Song)"])
+    Song -- ":PERFORMED" --> Artist(["Artist (:Artist)"])
+    Song -- ":COMPOSED" --> Composer(["Composer (:Composer)"])
+    Song -- ":WROTE" --> Lyricist(["Lyricist (:Lyricist)"])
+    Song -- ":PART_OF" --> Album(["Album (:Album)"])
+    Song -- ":HAS_GENRE" --> Genre(["Genre (:Genre)"])
+    Song -- ":HAS_MOOD" --> Mood(["Mood (:Mood)"])
+    Song -- ":IN_LANGUAGE" --> Language(["Language (:Language)"])
+    Song -- ":FEATURES" --> Instrument(["Instrument (:Instrument)"])
 ```
 
 ### Node Schema & Properties
 
-| Label | Primary Key | Key Properties |
+| Node Label | Primary ID | Key Properties |
 | :--- | :--- | :--- |
-| **`Song`** | `id` | `title`, `releaseYear`, `durationSeconds`, `popularity`, `coverImage`, `likeCount` |
+| **`Song`** | `id` | `title`, `releaseYear`, `durationSeconds`, `popularity`, `coverImage`, `isLiked` |
 | **`Artist`** | `id` | `name`, `country`, `image` |
-| **`Composer`** | `id` | `name`, `image` |
-| **`Lyricist`** | `id` | `name` |
+| **`Composer`** | `id` | `name`, `country`, `image` |
+| **`Lyricist`** | `id` | `name`, `country` |
 | **`Album`** | `id` | `title`, `releaseYear`, `coverImage` |
 | **`Genre`** | `id` | `name` |
 | **`Mood`** | `id` | `name` |
@@ -68,37 +68,90 @@ graph TD
 
 ---
 
+## 🔑 Environment Secrets (`.env`) & Security
+
+All database connection parameters are stored in the root `.env` file and accessed securely via `$env/static/private` in SvelteKit server modules ([cognodb.ts](file:///d:/sonicmesh-app/sonicmesh-app/src/lib/server/cognodb.ts)). Secrets are never exposed to client-side code or committed to public version control.
+
+### `.env` File Template
+
+```env
+# CognoDB Cloud Instance Connection Details
+COGNODB_URI="bolt+s://<instance-id>.databases.cognodb.cloud"
+COGNODB_USER="cognodb"
+COGNODB_PASSWORD="<your-instance-password>"
+```
+
+### What Each Variable Is Used For:
+1. **`COGNODB_URI`**: The secure Bolt protocol URI (`bolt+s://`) provided by your CognoDB Cloud Console instance.
+2. **`COGNODB_USER`**: Database user name (default: `cognodb`).
+3. **`COGNODB_PASSWORD`**: Secret password generated when creating the CognoDB database instance.
+
+---
+
+## 🚀 Setup & Local Installation
+
+### Step 1: Provision a Free CognoDB Cloud Instance
+1. Go to [https://console.cognodb.com/signup](https://console.cognodb.com/signup) and create a free account (no credit card required).
+2. Create a free `c0` instance in your preferred region (provisions in under a minute).
+3. Copy your Connection URI (`bolt+s://<instance-id>.databases.cognodb.cloud`) and generated password.
+
+### Step 2: Clone & Configure Environment
+```bash
+git clone https://github.com/dinesh-gurusamy/sonicmesh-app.git
+cd sonicmesh-app
+```
+Create a `.env` file in the root directory:
+```env
+COGNODB_URI="bolt+s://<your-instance-id>.databases.cognodb.cloud"
+COGNODB_USER="cognodb"
+COGNODB_PASSWORD="<your-generated-password>"
+```
+
+### Step 3: Install Dependencies
+```bash
+npm install
+```
+
+### Step 4: Seed Database with Music Graph Data
+Execute the seed script to automatically populate your CognoDB database with realistic music tracks, singers, composers, albums, genres, moods, and relationships:
+```bash
+npm run seed
+```
+
+### Step 5: Start Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+---
+
 ## 🔍 Key Cypher Queries Explained
 
-All queries interact with CognoDB via the official `neo4j-driver` using **parameterized inputs** to prevent Cypher injection vulnerabilities.
+All queries use **parameterized Cypher inputs** via the official `neo4j-driver` package to prevent injection attacks and optimize query plan execution caching.
 
-### 1. Explainable Multi-Hop Recommendations Query
-Calculates candidate recommendation tracks based on shared artist, composer, genre, mood, and language relationships from the user's liked songs:
+### 1. Multi-Hop Explainable Recommendations Query
+Traverses 2-hop graph paths connecting liked tracks to candidate songs via shared creators, genres, and moods:
 
 ```cypher
 MATCH (u:User {id: $userId})-[l:LIKES]->(s1:Song)
 MATCH (s1)-[:PERFORMED|COMPOSED|HAS_GENRE|HAS_MOOD|IN_LANGUAGE]-(entity)-(s2:Song)
 WHERE NOT (u)-[:LIKES]->(s2) AND s1 <> s2
-WITH s2, count(DISTINCT entity) as weightScore
-OPTIONAL MATCH (s2)-[:PERFORMED]->(a:Artist)
-OPTIONAL MATCH (s2)-[:COMPOSED]->(c:Composer)
-OPTIONAL MATCH (s2)-[:HAS_GENRE]->(g:Genre)
-OPTIONAL MATCH (s2)-[:HAS_MOOD]->(m:Mood)
-OPTIONAL MATCH (s2)-[:IN_LANGUAGE]->(lang:Language)
+WITH s2, count(DISTINCT entity) as sharedScore, 
+     collect(DISTINCT {
+       likedTitle: s1.title, 
+       connectorType: head(labels(entity)), 
+       connectorName: coalesce(entity.title, entity.name)
+     }) as pathLinks
 RETURN s2.id as id, s2.title as title, s2.releaseYear as releaseYear, 
        s2.durationSeconds as durationSeconds, s2.popularity as popularity, 
-       s2.coverImage as coverImage, weightScore,
-       collect(DISTINCT a.name) as artists,
-       collect(DISTINCT c.name) as composers,
-       collect(DISTINCT g.name) as genres,
-       collect(DISTINCT m.name) as moods,
-       head(collect(DISTINCT lang.name)) as language
-ORDER BY weightScore DESC, s2.popularity DESC
+       s2.coverImage as coverImage, sharedScore, pathLinks
+ORDER BY sharedScore DESC, s2.popularity DESC
 LIMIT 10
 ```
 
-### 2. Shortest-Path Multi-Hop Connection Finder
-Finds the shortest relationship chain between any two entities (songs, artists, composers) up to 5 hops:
+### 2. Shortest-Path Connection Query
+Calculates the shortest relationship chain between any two entities up to 5 hops out:
 
 ```cypher
 MATCH (start {name: $startQuery}), (end {name: $endQuery})
@@ -112,72 +165,58 @@ RETURN [n in nodes(p) | {
 [r in relationships(p) | type(r)] as relationships
 ```
 
-### 3. Parameterized Node Creation & Relationship Merging
-Adds a new song to the catalog and links it to creators using Cypher `MERGE`:
+### 3. Parameterized Song Insertion & Relationship MERGE
+Merges new track metadata into graph nodes while maintaining strict identity uniqueness:
 
 ```cypher
-MERGE (s:Song {id: $songId})
-ON CREATE SET s.title = $title, s.releaseYear = $releaseYear, s.durationSeconds = $durationSeconds, s.popularity = 85
-MERGE (a:Artist {name: $artistName}) ON CREATE SET a.id = "ART-" + apoc.create.uuid()
-MERGE (c:Composer {name: $composerName}) ON CREATE SET c.id = "CMP-" + apoc.create.uuid()
-MERGE (s)-[:PERFORMED]->(a)
-MERGE (s)-[:COMPOSED]->(c)
+CREATE (s:Song {
+    id: $songId, title: $title, releaseYear: toInteger($releaseYear), 
+    durationSeconds: toInteger($durationSeconds), popularity: 85
+})
+MERGE (a:Artist {name: $artistName}) ON CREATE SET a.id = $artistId
+MERGE (c:Composer {name: $composerName}) ON CREATE SET c.id = $composerId
+MERGE (a)-[:PERFORMED]->(s)
+MERGE (c)-[:COMPOSED]->(s)
 ```
 
 ---
 
-## 🛠️ Project Architecture & Engineering Highlights
+## 🎨 Features & Application Highlights
 
-- **Non-Blocking Streaming UI**: SvelteKit client-side API routes (`/api/stats`, `/api/songs`, `/api/recommendations`, `/api/connect`) paired with Svelte `{#await ...}` promises render page layouts **instantly** without server-side blocking.
-- **Loading Skeletons & UX**: Shimmer placeholder components ([LoadingSkeleton.svelte](file:///d:/impact-graph/impactgraph-app/src/lib/components/LoadingSkeleton.svelte)) display during network fetches.
-- **Resilient Connection Pooling**: [cognodb.ts](file:///d:/impact-graph/impactgraph-app/src/lib/server/cognodb.ts) configures driver connection pooling (`maxConnectionPoolSize: 10`, `connectionTimeout: 5000`) and graceful error handling for network interruptions (`ECONNRESET`).
-- **Strict Environment Security**: Secrets (`COGNODB_URI`, `COGNODB_USER`, `COGNODB_PASSWORD`) are loaded safely using `$env/static/private` and are never committed to the repository.
+1. **Smart Recommendations (`/recommendations`)**:
+   - Calculates personalized match scores based on user likes.
+   - Renders interactive **`GRAPH PATH EXECUTION TRACE`** flow badges (`[Vaseegara] ➔ [:COMPOSED] ➔ [Harris Jayaraj] ➔ [Munbe Vaa (+20 Pts)]`).
 
----
+2. **Liked Connections Visualizer (`/liked-connections`)**:
+   - Renders an interactive visual graph mesh mapping saved tracks to performers, composers, and albums.
 
-## 🚀 Setup & Local Installation
+3. **Shortest Connection Path Finder (`/connect`)**:
+   - Interactive pathfinder calculating relationship hops between any two artists or songs in the database.
 
-### 1. Prerequisites
-- Node.js (v18 or higher)
-- A free **CognoDB Cloud** instance (from [console.cognodb.com](https://console.cognodb.com))
+4. **Global Autocomplete Search (`SearchAutocomplete.svelte`)**:
+   - Real-time search autocomplete querying songs, singers, and composers with clean categorizations.
 
-### 2. Environment Configuration
-Create a `.env` file in the root directory:
+5. **Track Insertion Console (`/add-song`)**:
+   - Interactive form executing parameterized Cypher `MERGE` statements linking performers, composers, genre, mood, and instruments.
 
-```env
-COGNODB_URI="bolt+s://<your-instance-id>.databases.cognodb.com"
-COGNODB_USER="cognodb"
-COGNODB_PASSWORD="<your-generated-password>"
-```
-
-### 3. Install Dependencies
-```bash
-npm install
-```
-
-### 4. Seed CognoDB Database
-Populate the database with songs, artists, composers, albums, and high-quality image URLs:
-
-```bash
-npm run seed
-```
-
-### 5. Run Local Development Server
-```bash
-npm run dev
-```
-Open `http://localhost:5173` in your browser.
+6. **Graceful Offline & Unreachable Error Handling**:
+   - Detects connection drops (`ECONNRESET`, offline state) and displays user-friendly fallback messaging with retry actions.
 
 ---
 
 ## 🧪 Verification & Type Check
 
-To run TypeScript verification across all routes and components:
+To verify TypeScript types and Svelte component syntax across the codebase:
 
 ```bash
 npm run check
 ```
-*(Verification result: 0 errors, 0 warnings)*
+*(Result: **0 errors, 0 warnings**)*
 
 ---
- 
+
+## 📄 License & Author
+
+- **Author**: Dinesh Gurusamy  
+- **Assignment**: Wexa AI Take-Home Assignment  
+- **Submission Email**: `hr@wexa.ai`
