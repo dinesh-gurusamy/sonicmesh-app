@@ -18,7 +18,7 @@
 
 	async function getCatalogSongs() {
 		if (!browser) return [];
-		const res = await fetch('/api/songs?limit=50');
+		const res = await fetch('/api/songs?limit=50', { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch songs catalog');
 		const payload = await res.json();
 		const songs = payload.songs || [];
@@ -62,7 +62,8 @@
 			const res = await fetch('/api/like', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ songId })
+				body: JSON.stringify({ songId }),
+				credentials: 'include'
 			});
 
 			if (!res.ok) throw new Error('Like toggle failed');

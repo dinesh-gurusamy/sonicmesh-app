@@ -9,14 +9,14 @@
 
 	async function getRecommendations() {
 		if (!browser) return [];
-		const res = await fetch('/api/recommendations');
+		const res = await fetch('/api/recommendations', { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch recommendations');
 		return await res.json();
 	}
 
 	async function getLikedSongs() {
 		if (!browser) return { likedSongs: [] };
-		const res = await fetch('/api/liked-connections');
+		const res = await fetch('/api/liked-connections', { credentials: 'include' });
 		if (!res.ok) return { likedSongs: [] };
 		return await res.json();
 	}
@@ -34,7 +34,8 @@
 			const res = await fetch('/api/like', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ songId })
+				body: JSON.stringify({ songId }),
+				credentials: 'include'
 			});
 			if (!res.ok) throw new Error('Failed to toggle like');
 			// Re-fetch recommendations and liked songs

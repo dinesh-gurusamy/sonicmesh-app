@@ -248,7 +248,7 @@ class InMemoryGraphStore {
 		}
 	}
 
-	public getSongDetailed(songId: string, currentUserId = 'USR-001'): SongDetail | null {
+	public getSongDetailed(songId: string, currentUserId = 'USR-001', customLikes?: string[]): SongDetail | null {
 		const s = this.songs.get(songId);
 		if (!s) return null;
 
@@ -276,13 +276,21 @@ class InMemoryGraphStore {
 		const instIds = Array.from(this.songToInstruments.get(songId) || []);
 		const instruments = instIds.map((id) => this.instruments.get(id)).filter(Boolean);
 
-		const userLikedSet = this.userLikes.get(currentUserId) || new Set();
-		const isLiked = userLikedSet.has(songId);
+		let isLiked = false;
+		if (customLikes !== undefined) {
+			isLiked = customLikes.includes(songId);
+		} else {
+			const userLikedSet = this.userLikes.get(currentUserId) || new Set();
+			isLiked = userLikedSet.has(songId);
+		}
 
 		// Calculate total like count across all users
 		let totalLikes = 0;
 		for (const [, likes] of this.userLikes.entries()) {
 			if (likes.has(songId)) totalLikes++;
+		}
+		if (customLikes !== undefined && isLiked && totalLikes === 0) {
+			totalLikes = 1;
 		}
 
 		return {
@@ -305,10 +313,10 @@ class InMemoryGraphStore {
 		};
 	}
 
-	public getAllSongsDetailed(currentUserId = 'USR-001', limit = 100): SongDetail[] {
+	public getAllSongsDetailed(currentUserId = 'USR-001', limit = 100, customLikes?: string[]): SongDetail[] {
 		const results: SongDetail[] = [];
 		for (const [id] of this.songs.entries()) {
-			const detail = this.getSongDetailed(id, currentUserId);
+			const detail = this.getSongDetailed(id, currentUserId, customLikes);
 			if (detail) results.push(detail);
 			if (results.length >= limit) break;
 		}
@@ -370,7 +378,7 @@ export async function getHomeStats(): Promise<HomeStats> {
 	};
 }
 
-export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001', limitParam = 50): Promise<SongDetail[]> {
+export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001', limitParam = 50, customLikes?: string[]): Promise<SongDetail[]> {
 	const userId = typeof userIdOrLimit === 'string' ? userIdOrLimit : 'USR-001';
 	const limit = typeof userIdOrLimit === 'number' ? userIdOrLimit : limitParam;
 
@@ -421,7 +429,7 @@ export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001
 					instruments: [],
 					lyricists: [],
 					likeCount: r.likeCount || 0,
-					isLiked: Boolean(r.isLiked)
+					isLiked: customLikes !== undefined ? customLikes.includes(r.id) : Boolean(r.isLiked)
 				}));
 			}
 		} catch (err) {
@@ -429,7 +437,7 @@ export async function getFeaturedSongs(userIdOrLimit: string | number = 'USR-001
 		}
 	}
 
-	return graphStore.getAllSongsDetailed(userId, limit);
+	return graphStore.getAllSongsDetailed(userId, limit, customLikes);
 }
 
 export async function searchEntities(queryStr: string) {
@@ -441,30 +449,30 @@ export async function searchEntities(queryStr: string) {
 
 	for (const [, s] of graphStore.songs.entries()) {
 		if (s.title.toLowerCase().includes(q)) {
-			songs.push({ id: s.id, name: s.title, image: s.coverImage || DEFAULT_SONG_IMAGE });
+			songs.push(s);
 		}
 	}
 
 	for (const [, a] of graphStore.artists.entries()) {
 		if (a.name.toLowerCase().includes(q)) {
-			artists.push({ id: a.id, name: a.name, image: a.image || DEFAULT_ARTIST_IMAGE });
+			artists.push(a);
 		}
 	}
 
 	for (const [, c] of graphStore.composers.entries()) {
 		if (c.name.toLowerCase().includes(q)) {
-			composers.push({ id: c.id, name: c.name, image: c.image || DEFAULT_COMPOSER_IMAGE });
+			composers.push(c);
 		}
 	}
 
 	return {
-		songs: songs.slice(0, 10),
-		artists: artists.slice(0, 10),
-		composers: composers.slice(0, 10)
+		songs: songs.slice(0, 8),
+		artists: artists.slice(0, 8),
+		composers: composers.slice(0, 8)
 	};
 }
 
-export async function getSongDetail(songId: string, currentUserId = 'USR-001'): Promise<SongDetail | null> {
+export async function getSongDetail(songId: string, currentUserId = 'USR-001', customLikes?: string[]): Promise<SongDetail | null> {
 	const isConnected = await verifyCognoDBConnection();
 	if (isConnected) {
 		try {
@@ -516,7 +524,7 @@ export async function getSongDetail(songId: string, currentUserId = 'USR-001'): 
 					languages: (r.languages || []).filter((lang: any) => lang.id),
 					instruments: (r.instruments || []).filter((i: any) => i.id),
 					likeCount: r.likeCount || 0,
-					isLiked: Boolean(r.isLiked)
+					isLiked: customLikes !== undefined ? customLikes.includes(r.id) : Boolean(r.isLiked)
 				};
 			}
 		} catch (err) {
@@ -524,7 +532,7 @@ export async function getSongDetail(songId: string, currentUserId = 'USR-001'): 
 		}
 	}
 
-	return graphStore.getSongDetailed(songId, currentUserId);
+	return graphStore.getSongDetailed(songId, currentUserId, customLikes);
 }
 
 export async function addSongWithRelationships(params: {
@@ -687,52 +695,77 @@ export async function addSongWithRelationships(params: {
 	return songId;
 }
 
-export async function toggleLikeSong(songId: string, userId = 'USR-001'): Promise<boolean> {
-	if (!graphStore.userLikes.has(userId)) {
-		graphStore.userLikes.set(userId, new Set());
+export async function toggleLikeSong(
+	songId: string,
+	userId = 'USR-001',
+	customLikes?: string[]
+): Promise<{ isLiked: boolean; allLikes: string[] }> {
+	let userLikedSet: Set<string>;
+	if (customLikes !== undefined) {
+		userLikedSet = new Set(customLikes);
+		graphStore.userLikes.set(userId, userLikedSet);
+	} else {
+		if (!graphStore.userLikes.has(userId)) {
+			graphStore.userLikes.set(userId, new Set());
+		}
+		userLikedSet = graphStore.userLikes.get(userId)!;
 	}
-	const userLikedSet = graphStore.userLikes.get(userId)!;
-	const isCurrentlyLiked = userLikedSet.has(songId);
 
+	const isCurrentlyLiked = userLikedSet.has(songId);
 	if (isCurrentlyLiked) {
 		userLikedSet.delete(songId);
 	} else {
 		userLikedSet.add(songId);
 	}
 	const newStatus = !isCurrentlyLiked;
+	const allLikes = Array.from(userLikedSet);
 
 	const isConnected = await verifyCognoDBConnection();
 	if (isConnected) {
 		try {
 			if (newStatus) {
-				await runWriteQuery(`
+				await runWriteQuery(
+					`
 					MATCH (u:User {id: $userId}), (s:Song {id: $songId})
 					MERGE (u)-[:LIKED]->(s)
-				`, { userId, songId });
+				`,
+					{ userId, songId }
+				);
 			} else {
-				await runWriteQuery(`
+				await runWriteQuery(
+					`
 					MATCH (u:User {id: $userId})-[r:LIKED]->(s:Song {id: $songId})
 					DELETE r
-				`, { userId, songId });
+				`,
+					{ userId, songId }
+				);
 			}
 		} catch (err) {
 			console.warn('Error syncing like to CognoDB:', err);
 		}
 	}
 
-	return newStatus;
+	return { isLiked: newStatus, allLikes };
 }
 
-export async function getExplainableRecommendations(userId = 'USR-001'): Promise<Recommendation[]> {
+export async function getExplainableRecommendations(
+	userId = 'USR-001',
+	customLikes?: string[]
+): Promise<Recommendation[]> {
 	try {
-		const likedIds = Array.from(graphStore.userLikes.get(userId) || []);
+		const likedIds =
+			customLikes !== undefined
+				? customLikes
+				: Array.from(graphStore.userLikes.get(userId) || []);
 
 		if (likedIds.length === 0) {
 			return [];
 		}
 
 		// Retrieve all detailed objects of liked songs
-		const likedSongs = likedIds.map((id) => graphStore.getSongDetailed(id, userId)).filter(Boolean) as SongDetail[];
+		const likedSongs = likedIds
+			.map((id) => graphStore.getSongDetailed(id, userId, customLikes))
+			.filter(Boolean) as SongDetail[];
 
 		if (likedSongs.length === 0) {
 			return [];
@@ -1237,9 +1270,9 @@ export async function getGraphExplorerData(limit = 60, labelFilter?: string) {
 	};
 }
 
-export async function getLikedSongsConnections(userId = 'USR-001') {
-	const likedIds = Array.from(graphStore.userLikes.get(userId) || []);
-	let likedSongs: SongDetail[] = likedIds.map((id) => graphStore.getSongDetailed(id, userId)).filter(Boolean) as SongDetail[];
+export async function getLikedSongsConnections(userId = 'USR-001', customLikes?: string[]) {
+	const likedIds = customLikes !== undefined ? customLikes : Array.from(graphStore.userLikes.get(userId) || []);
+	let likedSongs: SongDetail[] = likedIds.map((id) => graphStore.getSongDetailed(id, userId, customLikes)).filter(Boolean) as SongDetail[];
 
 	if (likedSongs.length === 0) {
 		return {
@@ -1291,11 +1324,12 @@ export async function getLikedSongsConnections(userId = 'USR-001') {
 		}
 	});
 
-	// Find pairwise shared creators / albums / genres between liked tracks
+	// Find pairwise intersections between all liked songs
 	for (let i = 0; i < likedSongs.length; i++) {
 		for (let j = i + 1; j < likedSongs.length; j++) {
 			const s1 = likedSongs[i];
 			const s2 = likedSongs[j];
+
 			const connectors: any[] = [];
 			const relTypes = new Set<string>();
 
@@ -1374,8 +1408,8 @@ export async function getLikedSongsConnections(userId = 'USR-001') {
 	};
 }
 
-export async function getUserMusicDNA(userId = 'USR-001') {
-	const likedIds = Array.from(graphStore.userLikes.get(userId) || []);
+export async function getUserMusicDNA(userId = 'USR-001', customLikes?: string[]) {
+	const likedIds = customLikes !== undefined ? customLikes : Array.from(graphStore.userLikes.get(userId) || []);
 	if (likedIds.length === 0) {
 		return {
 			totalLikedCount: 0,
@@ -1392,7 +1426,7 @@ export async function getUserMusicDNA(userId = 'USR-001') {
 	const composersList: string[] = [];
 
 	likedIds.forEach((id) => {
-		const s = graphStore.getSongDetailed(id, userId);
+		const s = graphStore.getSongDetailed(id, userId, customLikes);
 		if (s) {
 			s.genres.forEach((g: any) => genresList.push(g.name));
 			s.moods.forEach((m: any) => moodsList.push(m.name));

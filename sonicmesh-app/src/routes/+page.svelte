@@ -37,7 +37,7 @@
 	async function getSongs(query: string) {
 		if (!browser) return { type: 'featured', songs: [] };
 		const url = `/api/songs${query ? '?q=' + encodeURIComponent(query) : '?limit=50'}`;
-		const res = await fetch(url);
+		const res = await fetch(url, { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch songs');
 		const payload = await res.json();
 
@@ -64,14 +64,14 @@
 
 	async function getRecommendations() {
 		if (!browser) return [];
-		const res = await fetch('/api/recommendations');
+		const res = await fetch('/api/recommendations', { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch recommendations');
 		return await res.json();
 	}
 
 	async function getMusicDNA() {
 		if (!browser) return null;
-		const res = await fetch('/api/dna');
+		const res = await fetch('/api/dna', { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch music DNA');
 		return await res.json();
 	}
@@ -103,7 +103,8 @@
 			const res = await fetch('/api/like', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ songId })
+				body: JSON.stringify({ songId }),
+				credentials: 'include'
 			});
 
 			if (!res.ok) throw new Error('Like toggle failed');

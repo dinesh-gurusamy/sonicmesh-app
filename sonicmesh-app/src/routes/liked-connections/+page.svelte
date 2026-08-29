@@ -18,7 +18,7 @@
 					topConnector: 'N/A'
 				}
 			};
-		const res = await fetch('/api/liked-connections');
+		const res = await fetch('/api/liked-connections', { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to load liked songs connections');
 		return await res.json();
 	}

@@ -11,7 +11,7 @@
 
 	async function getSongDetail(songId: string) {
 		if (!browser) return { song: null };
-		const res = await fetch(`/api/song/${songId}`);
+		const res = await fetch(`/api/song/${songId}`, { credentials: 'include' });
 		if (!res.ok) throw new Error('Failed to fetch song details');
 		const payload = await res.json();
 		if (payload.song) {
