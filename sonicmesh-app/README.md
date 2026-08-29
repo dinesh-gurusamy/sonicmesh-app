@@ -3,6 +3,7 @@
 > **WEXA AI — Take-Home Assignment: Build a Graph Database Application**  
 > **Candidate**: Dinesh Gurusamy  
 > **Repository**: [https://github.com/dinesh-gurusamy/sonicmesh-app](https://github.com/dinesh-gurusamy/sonicmesh-app)  
+> **Assignment Specification & Credentials**: [Google Documentation Link](https://docs.google.com/document/d/1mbHQsn-oXqDk4-uxhnldfJBHx1gHEHYEnLwWRl0EqYk/edit?tab=t.0)  
 > **Database Layer**: [CognoDB Cloud](https://console.cognodb.com) (openCypher / Neo4j Bolt Driver)  
 > **Tech Stack**: SvelteKit 2, TypeScript, Svelte 5 Runes, Tailwind CSS  
 
@@ -71,6 +72,9 @@ graph TD
 ## 🔑 Environment Secrets (`.env`) & Security
 
 All database connection parameters are stored in the root `.env` file and accessed securely via `$env/static/private` in SvelteKit server modules ([cognodb.ts](file:///d:/sonicmesh-app/sonicmesh-app/src/lib/server/cognodb.ts)). Secrets are never exposed to client-side code or committed to public version control.
+
+> 📄 **Assignment & Environment Credentials Doc**:  
+> Refer to the attached [Google Documentation Link](https://docs.google.com/document/d/1mbHQsn-oXqDk4-uxhnldfJBHx1gHEHYEnLwWRl0EqYk/edit?tab=t.0) for additional setup details and credentials configuration.
 
 ### `.env` File Template
 
