@@ -84,6 +84,15 @@ type RecommendationReason = {
 	explanation: string;
 };
 
+type RecommendationPathLink = {
+	likedSongId?: string;
+	likedTitle: string;
+	connectorType: string;
+	connectorName: string;
+	candidateTitle?: string;
+	points?: number;
+};
+
 type Recommendation = {
 	song: {
 		id: string;
@@ -93,14 +102,24 @@ type Recommendation = {
 		popularity: number;
 		coverImage?: string;
 	};
+	album?: {
+		id: string;
+		title: string;
+		releaseYear?: number;
+		coverImage?: string;
+	};
 	artists: string[];
 	composers: string[];
+	lyricists?: string[];
 	genres: string[];
 	moods: string[];
 	language: string;
+	instruments?: string[];
 	score: number;
 	reasons: RecommendationReason[];
+	pathLinks?: RecommendationPathLink[];
 	pathDescription: string;
+	isLiked?: boolean;
 };
 
 type HomeStats = {

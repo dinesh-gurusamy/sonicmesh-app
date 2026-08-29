@@ -3,22 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-let envUri = process.env.COGNODB_URI;
-let envUser = process.env.COGNODB_USER;
-let envPassword = process.env.COGNODB_PASSWORD;
-
-try {
-	const staticEnv = await import(/* @vite-ignore */ '$env/static/private');
-	if (staticEnv.COGNODB_URI) envUri = staticEnv.COGNODB_URI;
-	if (staticEnv.COGNODB_USER) envUser = staticEnv.COGNODB_USER;
-	if (staticEnv.COGNODB_PASSWORD) envPassword = staticEnv.COGNODB_PASSWORD;
-} catch (_) {
-	// Fallback to dotenv for CLI script execution
-}
-
-const uri = envUri || 'bolt+s://db-8d0153a1.bravo.databases.cognodb.com';
-const user = envUser || 'cognodb';
-const password = envPassword || '';
+const uri = process.env.COGNODB_URI || 'bolt+s://db-8d0153a1.bravo.databases.cognodb.com';
+const user = process.env.COGNODB_USER || 'cognodb';
+const password = process.env.COGNODB_PASSWORD || '';
 
 export const driver: Driver = neo4j.driver(
 	uri,
@@ -30,6 +17,9 @@ export const driver: Driver = neo4j.driver(
 );
 
 export async function verifyCognoDBConnection(): Promise<boolean> {
+	if (!password || !password.trim()) {
+		return false;
+	}
 	try {
 		await driver.verifyConnectivity();
 		return true;
@@ -41,6 +31,9 @@ export async function verifyCognoDBConnection(): Promise<boolean> {
 }
 
 export async function runReadQuery<T = any>(query: string, params: Record<string, any> = {}): Promise<T[]> {
+	if (!password || !password.trim()) {
+		return [];
+	}
 	let session;
 	try {
 		session = driver.session();
@@ -73,6 +66,9 @@ export async function runReadQuery<T = any>(query: string, params: Record<string
 }
 
 export async function runWriteQuery<T = any>(query: string, params: Record<string, any> = {}): Promise<T[]> {
+	if (!password || !password.trim()) {
+		return [];
+	}
 	let session;
 	try {
 		session = driver.session();

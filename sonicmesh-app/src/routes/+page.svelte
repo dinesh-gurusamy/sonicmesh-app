@@ -336,54 +336,81 @@
 			</a>
 		</div>
 
-		<!-- Sample Recommendation Card -->
-		<div class="space-y-4 rounded-lg border border-[#2e2e2e] bg-[#1e1e1e] p-6">
-			<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-				<div class="flex items-center gap-4">
-					<EntityIcon type="song" class="h-14 w-14 shrink-0" />
-					<div>
-						<div class="flex items-center gap-2">
-							<h3 class="font-heading text-lg font-bold text-white">Munbe Vaa</h3>
-							<span class="sb-badge-green px-2 py-0.5 text-xs font-bold">94% Match</span>
+		<!-- Live Explainable Recommendation Card -->
+		{#await recsPromise}
+			<div class="h-36 animate-pulse rounded-lg border border-[#2e2e2e] bg-[#1e1e1e]"></div>
+		{:then recommendations}
+			{#if recommendations && recommendations.length > 0}
+				{@const rec = recommendations[0]}
+				{@const pathLinks = rec.pathLinks || []}
+				{@const likedTitles = Array.from(new Set(pathLinks.map((p: any) => p.likedTitle))).filter(Boolean)}
+				<div class="space-y-4 rounded-lg border border-[#2e2e2e] bg-[#1e1e1e] p-6">
+					<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+						<div class="flex items-center gap-4">
+							<div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#2e2e2e]">
+								<EntityIcon type="song" class="h-full w-full" />
+							</div>
+							<div>
+								<div class="flex items-center gap-2.5">
+									<a href="/song/{rec.song.id}" class="font-heading text-lg font-bold text-white hover:text-[#3ecf8e] hover:underline">
+										{rec.song.title}
+									</a>
+									<span class="sb-badge-green px-2 py-0.5 text-xs font-bold">{rec.score}% Match</span>
+								</div>
+								<p class="text-xs text-[#a1a1aa] mt-0.5">
+									{#if rec.album}
+										<span class="text-[#ededed] font-semibold">💿 {rec.album.title}</span> &bull;
+									{/if}
+									{rec.composers.length ? rec.composers.join(', ') : 'Composer'} &bull; {rec.artists.length ? rec.artists.join(', ') : 'Performer'} &bull; {rec.language}
+								</p>
+							</div>
 						</div>
-						<p class="text-xs text-[#a1a1aa]">Harris Jayaraj &bull; Shreya Ghoshal &bull; Tamil</p>
+
+						<button
+							onclick={() => (showSampleWhy = !showSampleWhy)}
+							class="sb-btn-secondary shrink-0 cursor-pointer px-4 py-2 text-xs font-semibold"
+						>
+							{showSampleWhy ? 'Hide Recommendation Reasons' : 'Why this song? ➔'}
+						</button>
 					</div>
+
+					<div class="flex flex-wrap items-center gap-2 border-t border-[#2e2e2e] pt-3 text-xs">
+						<span class="text-[10px] font-bold text-[#71717a] uppercase">Because you liked:</span>
+						{#each likedTitles.slice(0, 3) as likedTitle}
+							<span class="sb-badge-rose px-2.5 py-0.5 text-xs font-bold">♥ {likedTitle}</span>
+						{/each}
+						{#each pathLinks.slice(0, 3) as link}
+							<span class="sb-badge-amber px-2.5 py-0.5 text-xs">{link.connectorType}: {link.connectorName}</span>
+						{/each}
+					</div>
+
+					{#if showSampleWhy}
+						<div class="sb-fade-in space-y-3 border-t border-[#2e2e2e] pt-3 text-xs">
+							<div class="text-[11px] font-bold text-[#3ecf8e] uppercase">
+								⚡ Graph Path Execution Trace:
+							</div>
+							<div class="space-y-2">
+								{#each pathLinks.slice(0, 2) as link}
+									<div class="flex flex-wrap items-center gap-2 rounded border border-[#2e2e2e] bg-[#121212] p-2.5 text-[#ededed]">
+										<span class="sb-badge-rose px-2 py-0.5 font-bold">{link.likedTitle}</span>
+										<span class="text-[#71717a]">➔</span>
+										<span class="sb-badge-amber px-2 py-0.5 font-bold">:{link.connectorType.toUpperCase()}</span>
+										<span class="text-[#71717a]">➔</span>
+										<span class="rounded bg-[#262626] px-2 py-0.5 font-bold">{link.connectorName}</span>
+										<span class="text-[#71717a]">➔</span>
+										<span class="sb-badge-green px-2 py-0.5 font-bold">{rec.song.title} (+{link.points || 20} Pts)</span>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
-
-				<button
-					onclick={() => (showSampleWhy = !showSampleWhy)}
-					class="sb-btn-secondary shrink-0 cursor-pointer px-4 py-2 text-xs font-semibold"
-				>
-					{showSampleWhy ? 'Hide Recommendation Reasons' : 'Why this song? ➔'}
-				</button>
-			</div>
-
-			<div class="flex flex-wrap items-center gap-2 border-t border-[#2e2e2e] pt-3 text-xs">
-				<span class="text-[10px] font-bold text-[#71717a] uppercase">Because you liked:</span>
-				<span class="sb-badge-rose px-2.5 py-0.5 text-xs font-bold">♥ Vaseegara</span>
-				<span class="sb-badge-amber px-2.5 py-0.5 text-xs">Same Composer: Harris Jayaraj</span>
-				<span class="sb-badge-green px-2.5 py-0.5 text-xs">Same Mood: Romantic</span>
-			</div>
-
-			{#if showSampleWhy}
-				<div class="sb-fade-in space-y-2 border-t border-[#2e2e2e] pt-3 text-xs">
-					<div class="text-[11px] font-bold text-[#3ecf8e] uppercase">
-						⚡ Graph Path Execution Trace:
-					</div>
-					<div class="space-y-2 rounded border border-[#2e2e2e] bg-[#121212] p-3 text-[#ededed]">
-						<div class="flex flex-wrap items-center gap-2">
-							<span class="sb-badge-rose px-2 py-0.5 font-bold">Vaseegara</span>
-							<span class="text-[#71717a]">➔</span>
-							<span class="sb-badge-amber px-2 py-0.5 font-bold">:COMPOSED</span>
-							<span class="text-[#71717a]">➔</span>
-							<span class="rounded bg-[#262626] px-2 py-0.5 font-bold">Harris Jayaraj</span>
-							<span class="text-[#71717a]">➔</span>
-							<span class="sb-badge-green px-2 py-0.5 font-bold">Munbe Vaa (+20 Pts)</span>
-						</div>
-					</div>
+			{:else}
+				<div class="rounded-lg border border-dashed border-[#2e2e2e] bg-[#1e1e1e] p-6 text-center text-xs text-[#a1a1aa]">
+					Like songs in the catalog to generate personalized explainable recommendations.
 				</div>
 			{/if}
-		</div>
+		{/await}
 	</section>
 
 	<!-- ========================================== -->
